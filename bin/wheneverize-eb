@@ -27,6 +27,8 @@ unless ARGV.empty?
   end
 end
 
+base = ARGV.empty? ? '.' : ARGV.shift
+
 schedule_content = <<-FILE
 # Use this file to easily define all of your cron jobs.
 #
@@ -55,8 +57,6 @@ end
 FILE
 
 file = 'config/schedule.rb'
-base = ARGV.empty? ? '.' : ARGV.shift
-
 file = File.join(base, file)
 if File.exists?(file)
   warn "[skip] `#{file}' already exists"
@@ -68,6 +68,7 @@ else
   puts "[add] writing `#{file}'"
   File.open(file, "w") { |f| f.write(schedule_content) }
 end
+
 
 eb_config_content = <<-FILE
 container_commands:
@@ -85,8 +86,6 @@ container_commands:
 FILE
 
 file = '.ebextensions/cron.config'
-base = ARGV.empty? ? '.' : ARGV.shift
-
 file = File.join(base, file)
 if File.exists?(file)
   warn "[skip] `#{file}' already exists"
@@ -99,4 +98,27 @@ else
   File.open(file, "w") { |f| f.write(eb_config_content) }
 end
 
-puts "[done] wheneverized!"
+
+aws_credentials_content = <<-FILE
+staging:
+  access_key_id: ''
+  secret_access_key: ''
+production:
+  access_key_id: ''
+  secret_access_key: ''
+FILE
+
+file = 'config/whenever-elasticbeanstalk.yml'
+file = File.join(base, file)
+if File.exists?(file)
+  warn "[skip] `#{file}' already exists"
+elsif File.exists?(file.downcase)
+  warn "[skip] `#{file.downcase}' exists, which could conflict with `#{file}'"
+elsif !File.exists?(File.dirname(file))
+  warn "[skip] directory `#{File.dirname(file)}' does not exist"
+else
+  puts "[add] writing `#{file}'"
+  File.open(file, "w") { |f| f.write(aws_credentials_content) }
+end
+
+puts "[done] wheneverized for Elastic Beanstalk!"
