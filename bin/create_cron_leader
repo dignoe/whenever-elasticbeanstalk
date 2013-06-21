@@ -1,8 +1,30 @@
 #!/usr/bin/ruby
+
+require 'optparse'
 require 'rubygems'
 gem 'aws-sdk'
-
 require 'aws-sdk'
+
+options = {}
+
+optparse = OptionParser.new do |opts|
+  opts.banner = "Usage: #{File.basename($0)} [options]"
+ 
+	# Define the options, and what they do
+	options[:no_update] = false
+	opts.on( '--no-update', 'Do not update crontab after making leader' ) do
+	 options[:no_update] = true
+	end
+
+	# This displays the help screen, all programs are
+	# assumed to have this option.
+	opts.on( '-h', '--help', 'Display this screen' ) do
+	 puts opts
+	 exit
+	end
+end
+
+optparse.parse!
 
 this_instance_id = `/opt/aws/bin/ec2-metadata -i | awk '{print $2}'`.strip
 environment = ENV["RAILS_ENV"]
@@ -24,4 +46,6 @@ if leader_instances.count < 1
 	ec2.instances[this_instance_id].tags["leader"] = "true"
 end
 
-`bundle exec setup_cron`
+unless options[:no_update]
+	`bundle exec setup_cron`
+end
