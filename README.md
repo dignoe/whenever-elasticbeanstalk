@@ -4,6 +4,8 @@ Whenever-elasticbeanstalk is an extension gem to [Whenever](https://github.com/j
 
 ## Installation
 
+**Whenever-elasticbeanstalk is still under development and not packaged as a gem yet**
+
 Add this line to your application's Gemfile:
 
     gem 'whenever-elasticbeanstalk'
