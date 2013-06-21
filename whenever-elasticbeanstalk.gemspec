@@ -6,9 +6,10 @@ require 'whenever-elasticbeanstalk/version'
 Gem::Specification.new do |gem|
   gem.name          = "whenever-elasticbeanstalk"
   gem.version       = Whenever::Elasticbeanstalk::VERSION
+  gem.platform      = Gem::Platform::RUBY
   gem.authors       = ["Chad McGimpsey"]
   gem.email         = ["chad.mcgimpsey@gmail.com"]
-  gem.description   = %q{Use whenever on AWS Elastic Beanstalk}
+  gem.description   = %q{Use Whenever on AWS Elastic Beanstalk}
   gem.summary       = %q{Allows you to run cron jobs easily on one or all AWS Elastic Beanstalk instances.}
   gem.homepage      = "https://github.com/dignoe/whenever-elasticbeanstalk"
 
@@ -16,7 +17,7 @@ Gem::Specification.new do |gem|
   gem.add_dependency('aws-sdk')
 
   gem.files         = `git ls-files`.split($/)
-  gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
+  gem.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
   gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
   gem.require_paths = ["lib"]
 end
