@@ -32,6 +32,16 @@ $ wheneverize-eb .
 
 This will create an initial `config/schedule.rb` file for you with the `ensure_leader` job set to run every minute. It will also create a `.ebextensions/cron.config` file that will automatically choose a leader on environment initialization, and start up Whenever with the correct `leader` role.
 
+### Manually updating schedule
+
+If you are already using Whenever, running `wheneverize-eb .` won't overwrite your `config/schedule.rb` file. You'll need to add the following lines in order for your environment to always have one leader.
+
+```ruby
+every 1.minute do
+  command "cd /var/app/current && bundle exec ensure_one_cron_leader"
+end
+```
+
 ### Create AWS IAM user
 
 In order for the scripts to work, you need to supply AWS credentials for a user with access to EC2 instances and tags. It is recommended to create a new user with limited access.
