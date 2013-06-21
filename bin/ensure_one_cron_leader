@@ -4,7 +4,7 @@ gem 'aws-sdk'
 
 require 'aws-sdk'
 
-this_instance_id = `ec2-metadata -i | awk '{print $2}'`.strip
+this_instance_id = `/opt/aws/bin/ec2-metadata -i | awk '{print $2}'`.strip
 environment = ENV["RAILS_ENV"]
 
 AWS_CREDENTIALS = YAML.load_file("config/whenever-elasticbeanstalk.yml")[environment]
