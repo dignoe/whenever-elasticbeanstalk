@@ -59,7 +59,6 @@ Example policy:
         "ec2:DescribeTags",
         "ec2:CreateTags"
       ],
-      "Sid": "Stmt1371766147000",
       "Resource": [
         "*"
       ],

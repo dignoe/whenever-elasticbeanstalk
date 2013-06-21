@@ -12,7 +12,7 @@ AWS.config(AWS_CREDENTIALS)
 ec2 = AWS::EC2.new
 
 if ec2.instances[this_instance_id].tags["leader"] == "true"
-	`bundle exec whenever --roles leader --set environment=#{environment} --update-crontab`
+	`bundle exec whenever --roles leader --set 'environment=#{environment}&path=/var/app/current' --update-crontab`
 else
-	`bundle exec whenever --set environment=#{environment} --update-crontab`
+	`bundle exec whenever --set 'environment=#{environment}&path=/var/app/current' --update-crontab`
 end
