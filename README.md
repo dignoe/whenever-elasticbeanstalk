@@ -8,22 +8,63 @@ Whenever-elasticbeanstalk is an extension gem to [Whenever](https://github.com/j
 
 Add this line to your application's Gemfile:
 
-    gem 'whenever-elasticbeanstalk'
+```ruby
+gem 'whenever-elasticbeanstalk'
+```
 
 And then execute:
 
-    $ bundle
+```bash
+$ bundle
+```
 
 Or install it yourself as:
 
-    $ gem install whenever-elasticbeanstalk
+```bash
+$ gem install whenever-elasticbeanstalk
+```
 
 ## Getting started
-
-		$ cd /apps/my-great-project
-		$ wheneverize-eb .
+```bash
+$ cd /apps/my-great-project
+$ wheneverize-eb .
+```
 
 This will create an initial `config/schedule.rb` file for you with the `ensure_leader` job set to run every minute. It will also create a `.ebextensions/cron.config` file that will automatically choose a leader on environment initialization, and start up Whenever with the correct `leader` role.
+
+### Create AWS IAM user
+
+In order for the scripts to work, you need to supply AWS credentials for a user with access to EC2 instances and tags. It is recommended to create a new user with limited access.
+
+Example policy:
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": [
+        "ec2:DescribeInstanceAttribute",
+        "ec2:DescribeInstanceStatus",
+        "ec2:DescribeInstances",
+        "ec2:DescribeTags",
+        "ec2:CreateTags"
+      ],
+      "Sid": "Stmt1371766147000",
+      "Resource": [
+        "*"
+      ],
+      "Effect": "Allow"
+    }
+  ]
+}
+```
+
+Then add the credentials to your `config/whenever-elasticbeanstalk.yml` file.
+```yaml
+staging:
+	access_key_id: 'your access key'
+	secret_access_key: 'your secret access key'
+```
 
 ## Usage
 
@@ -32,18 +73,20 @@ For `config/schedule.rb` usage, please see the documentation for the [Whenever g
 ### Run a task on only one instance
 
 To run a task only on one instance, assign the task to the `leader` role.
-
-		every :day, :at => "12:30am", :roles => [:leader] do
-			runner "MyModel.task_to_run_nightly_only_on_one_instance"
-		end
+```ruby
+every :day, :at => "12:30am", :roles => [:leader] do
+	runner "MyModel.task_to_run_nightly_only_on_one_instance"
+end
+```
 
 ### Run a task on all instances
 
 To run a task on all instance, omit the `roles` option.
-
-		every 1.minute do
-			command "touch /opt/elasticbeanstalk/support/.cron_check"
-		end
+```ruby
+every 1.minute do
+	command "touch /opt/elasticbeanstalk/support/.cron_check"
+end
+```
 
 ## Contributing
 
