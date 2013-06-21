@@ -1,0 +1,18 @@
+#!/usr/bin/ruby
+require 'rubygems'
+gem 'aws-sdk'
+
+require 'aws-sdk'
+
+this_instance_id = `ec2-metadata -i | awk '{print $2}'`.strip
+environment = ENV["RAILS_ENV"]
+
+AWS_CREDENTIALS = YAML.load_file("config/aws.yml")[:cron][environment.to_sym]
+AWS.config(AWS_CREDENTIALS)
+ec2 = AWS::EC2.new
+
+if ec2.instances[this_instance_id].tags["leader"] == "true"
+	`bundle exec whenever --roles leader --set environment=#{environment} --update-crontab`
+else
+	`bundle exec whenever --set environment=#{environment} --update-crontab`
+end

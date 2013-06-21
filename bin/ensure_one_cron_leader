@@ -1,0 +1,27 @@
+#!/usr/bin/ruby
+require 'rubygems'
+gem 'aws-sdk'
+
+require 'aws-sdk'
+
+this_instance_id = `ec2-metadata -i | awk '{print $2}'`.strip
+environment = ENV["RAILS_ENV"]
+
+AWS_CREDENTIALS = YAML.load_file("config/aws.yml")["cron"][environment]
+AWS.config(AWS_CREDENTIALS)
+ec2 = AWS::EC2.new
+
+environment_name = ec2.instances[this_instance_id].tags["elasticbeanstalk:environment-name"]
+
+leader_instances = ec2.instances.inject([]) do |m, i|
+	m << i.id if i.tags["elasticbeanstalk:environment-name"] == environment_name &&
+		i.status == :running &&
+		i.tags["leader"] == "true"
+	m
+end
+
+if leader_instances.count < 1
+	`bundle exec create_cron_leader`
+elsif leader_instances.count > 1 && leader_instances.includes? this_instance_id
+	`bundle exec remove_cron_leader`
+end
