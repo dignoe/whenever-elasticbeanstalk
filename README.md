@@ -4,8 +4,6 @@ Whenever-elasticbeanstalk is an extension gem to [Whenever](https://github.com/j
 
 ## Installation
 
-**Whenever-elasticbeanstalk is still under development and not packaged as a gem yet**
-
 Add this line to your application's Gemfile:
 
 ```ruby
@@ -30,7 +28,7 @@ $ cd /apps/my-great-project
 $ wheneverize-eb .
 ```
 
-This will create an initial `config/schedule.rb` file for you with the `ensure_leader` job set to run every minute. It will also create a `.ebextensions/cron.config` file that will automatically choose a leader on environment initialization, and start up Whenever with the correct `leader` role.
+This will create an initial `config/schedule.rb` file for you with the `ensure_leader` job set to run every minute. It will also create a `.ebextensions/cron.config` file that will automatically choose a leader on environment initialization, and start up Whenever with the correct `leader` role. Lastly, it creates the `config/whenever-elasticbeanstalk.yml` file that will contain your AWS credentials for retrieving your environment information.
 
 ### Manually updating schedule
 
@@ -73,6 +71,11 @@ Then add the credentials to your `config/whenever-elasticbeanstalk.yml` file.
 staging:
 	access_key_id: 'your access key'
 	secret_access_key: 'your secret access key'
+```
+
+Make sure to add the `RAILS_ENV` environment variable to your environment if you haven't already done so. This variable is not created automatically by AWS. You can add the following line to your `.elasticbeanstalk/optionsettings.appname-env` file:
+```yaml
+RAILS_ENV=staging
 ```
 
 ## Usage
