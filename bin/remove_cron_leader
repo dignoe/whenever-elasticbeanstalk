@@ -4,14 +4,20 @@ gem 'aws-sdk'
 
 require 'aws-sdk'
 
-this_instance_id = `/opt/aws/bin/ec2-metadata -i | awk '{print $2}'`.strip
-environment = ENV["RAILS_ENV"]
+ENVIRONMENT_NAME_FILE = "/var/app/support/env_name"
+AWS_CREDENTIALS = YAML.load_file("config/whenever-elasticbeanstalk.yml")[ENV["RAILS_ENV"]]
 
-AWS_CREDENTIALS = YAML.load_file("config/whenever-elasticbeanstalk.yml")[environment]
 AWS.config(AWS_CREDENTIALS)
 ec2 = AWS::EC2.new
 
-environment_name = ec2.instances[this_instance_id].tags["elasticbeanstalk:environment-name"]
+environment_name = if File.exists?(ENVIRONMENT_NAME_FILE)
+  File.read(ENVIRONMENT_NAME_FILE)
+else
+	instance_id = `/opt/aws/bin/ec2-metadata -i | awk '{print $2}'`.strip
+	env_name = ec2.instances[instance_id].tags["elasticbeanstalk:environment-name"]
+	File.open(ENVIRONMENT_NAME_FILE, 'w') {|f| f.write(env_name) }
+	env_name
+end
 
 leader_instances = ec2.instances.inject([]) do |m, i|
 	m << i.id if i.tags["elasticbeanstalk:environment-name"] == environment_name &&
@@ -20,7 +26,7 @@ leader_instances = ec2.instances.inject([]) do |m, i|
 	m
 end
 
-if leader_instances.count > 1 && leader_instances.includes? this_instance_id
+if leader_instances.count > 1 && leader_instances.include?(this_instance_id)
 	ec2.instances[this_instance_id].tags["leader"] = "false"
 end
 
