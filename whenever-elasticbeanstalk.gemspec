@@ -12,6 +12,7 @@ Gem::Specification.new do |gem|
   gem.description   = %q{Use Whenever on AWS Elastic Beanstalk}
   gem.summary       = %q{Allows you to run cron jobs easily on one or all AWS Elastic Beanstalk instances.}
   gem.homepage      = "https://github.com/dignoe/whenever-elasticbeanstalk"
+  gem.license       = 'MIT'
 
   gem.add_dependency('whenever')
   gem.add_dependency('aws-sdk')
