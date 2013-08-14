@@ -71,6 +71,9 @@ Then add the credentials to your `config/whenever-elasticbeanstalk.yml` file.
 staging:
 	access_key_id: 'your access key'
 	secret_access_key: 'your secret access key'
+  # If you are not using the default us-east-1 region, specify it here
+  # For available regions see: http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region
+  # region: 'eu-west-1'
 ```
 
 Make sure to add the `RAILS_ENV` environment variable to your environment if you haven't already done so. This variable is not created automatically by AWS. You can add the following line to your `.elasticbeanstalk/optionsettings.appname-env` file:
