@@ -29,32 +29,68 @@ end
 
 base = ARGV.empty? ? '.' : ARGV.shift
 
-schedule_content = <<-FILE
-# Use this file to easily define all of your cron jobs.
-#
-# It's helpful, but not entirely necessary to understand cron before proceeding.
-# http://en.wikipedia.org/wiki/Cron
-
-# Example:
-#
-# set :output, "/path/to/my/cron_log.log"
-#
-# every 2.hours do
-#   command "/usr/bin/some_great_command"
-#   runner "MyModel.some_method"
-#   rake "some:great:rake:task"
-# end
-#
-# every 4.days do
-#   runner "AnotherModel.prune_old_records"
-# end
-
-# Learn more: http://github.com/javan/whenever
-
-every 1.minute do
-  command "cd /var/app/current && bundle exec ensure_one_cron_leader"
+bundle_exists = if RUBY_VERSION[0..2] == '1.8'
+ require 'rubygems'
+ Gem.available?('bundler')
+else
+ Gem::Specification::find_all_by_name('bundler').any?
 end
-FILE
+
+if bundle_exists
+	schedule_content = <<-FILE
+	# Use this file to easily define all of your cron jobs.
+	#
+	# It's helpful, but not entirely necessary to understand cron before proceeding.
+	# http://en.wikipedia.org/wiki/Cron
+
+	# Example:
+	#
+	# set :output, "/path/to/my/cron_log.log"
+	#
+	# every 2.hours do
+	#   command "/usr/bin/some_great_command"
+	#   runner "MyModel.some_method"
+	#   rake "some:great:rake:task"
+	# end
+	#
+	# every 4.days do
+	#   runner "AnotherModel.prune_old_records"
+	# end
+
+	# Learn more: http://github.com/javan/whenever
+
+	every 1.minute do
+		command "cd /var/app/current && bundle exec ensure_one_cron_leader"
+	end
+	FILE
+else
+	schedule_content = <<-FILE
+	# Use this file to easily define all of your cron jobs.
+	#
+	# It's helpful, but not entirely necessary to understand cron before proceeding.
+	# http://en.wikipedia.org/wiki/Cron
+
+	# Example:
+	#
+	# set :output, "/path/to/my/cron_log.log"
+	#
+	# every 2.hours do
+	#   command "/usr/bin/some_great_command"
+	#   runner "MyModel.some_method"
+	#   rake "some:great:rake:task"
+	# end
+	#
+	# every 4.days do
+	#   runner "AnotherModel.prune_old_records"
+	# end
+
+	# Learn more: http://github.com/javan/whenever
+
+	every 1.minute do
+		command "cd /var/app/current && ensure_one_cron_leader"
+	end
+	FILE
+end	
 
 file = 'config/schedule.rb'
 file = File.join(base, file)
@@ -69,29 +105,53 @@ else
   File.open(file, "w") { |f| f.write(schedule_content) }
 end
 
+if bundle_exists
+	eb_config_content = <<-FILE
+	files:
+		/opt/elasticbeanstalk/hooks/appdeploy/post/10_reload_cron.sh:
+			mode: "00700"
+			owner: root
+			group: root
+			content: |
+				#!/usr/bin/env bash
+				. /opt/elasticbeanstalk/support/envvars
+				cd $EB_CONFIG_APP_CURRENT
+				bundle exec setup_cron
 
-eb_config_content = <<-FILE
-files:
-  /opt/elasticbeanstalk/hooks/appdeploy/post/10_reload_cron.sh:
-    mode: "00700"
-    owner: root
-    group: root
-    content: |
-      #!/usr/bin/env bash
-      . /opt/elasticbeanstalk/support/envvars
-      cd $EB_CONFIG_APP_CURRENT
-      bundle exec setup_cron
+	container_commands:
+		cron_01_set_leader:
+			test: test ! -f /opt/elasticbeanstalk/support/.cron-setup-complete
+			leader_only: true
+			cwd: /var/app/ondeck
+			command: bundle exec create_cron_leader --no-update
+		cron_02_write_cron_setup_complete_file:
+			cwd: /opt/elasticbeanstalk/support
+			command: touch .cron-setup-complete
+	FILE
+else
+	eb_config_content = <<-FILE
+	files:
+		/opt/elasticbeanstalk/hooks/appdeploy/post/10_reload_cron.sh:
+			mode: "00700"
+			owner: root
+			group: root
+			content: |
+				#!/usr/bin/env bash
+				. /opt/elasticbeanstalk/support/envvars
+				cd $EB_CONFIG_APP_CURRENT
+				setup_cron
 
-container_commands:
-  cron_01_set_leader:
-    test: test ! -f /opt/elasticbeanstalk/support/.cron-setup-complete
-    leader_only: true
-    cwd: /var/app/ondeck
-    command: bundle exec create_cron_leader --no-update
-  cron_02_write_cron_setup_complete_file:
-    cwd: /opt/elasticbeanstalk/support
-    command: touch .cron-setup-complete
-FILE
+	container_commands:
+		cron_01_set_leader:
+			test: test ! -f /opt/elasticbeanstalk/support/.cron-setup-complete
+			leader_only: true
+			cwd: /var/app/ondeck
+			command: create_cron_leader --no-update
+		cron_02_write_cron_setup_complete_file:
+			cwd: /opt/elasticbeanstalk/support
+			command: touch .cron-setup-complete
+	FILE
+end
 
 file = '.ebextensions/cron.config'
 file = File.join(base, file)

@@ -4,6 +4,12 @@ gem 'aws-sdk'
 
 require 'aws-sdk'
 
+bundle_exists = if RUBY_VERSION[0..2] == '1.8'
+ Gem.available?('bundler')
+else
+ Gem::Specification::find_all_by_name('bundler').any?
+end
+
 environment = ENV["RAILS_ENV"]
 AWS_CREDENTIALS = YAML.load_file("config/whenever-elasticbeanstalk.yml")[environment]
 
@@ -20,7 +26,15 @@ AWS.config(AWS_CREDENTIALS)
 ec2 = AWS::EC2.new
 
 if ec2.instances[instance_id].tags["leader"] == "true"
-	`bundle exec whenever --roles leader --set 'environment=#{environment}&path=/var/app/current' --update-crontab`
+	if bundle_exists
+		`bundle exec whenever --roles leader --set 'environment=#{environment}&path=/var/app/current' --update-crontab`
+	else
+		`whenever --roles leader --set 'environment=#{environment}&path=/var/app/current' --update-crontab`
+	end
 else
-	`bundle exec whenever --roles non-leader --set 'environment=#{environment}&path=/var/app/current' --update-crontab`
+	if bundle_exists
+		`bundle exec whenever --roles non-leader --set 'environment=#{environment}&path=/var/app/current' --update-crontab`
+	else
+		`whenever --roles non-leader --set 'environment=#{environment}&path=/var/app/current' --update-crontab`
+	end
 end
