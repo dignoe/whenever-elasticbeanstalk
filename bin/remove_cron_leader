@@ -3,6 +3,7 @@ require 'rubygems'
 gem 'aws-sdk'
 
 require 'aws-sdk'
+require 'erb'
 
 ENVIRONMENT_NAME_FILE = "/var/app/containerfiles/env_name"
 AWS_CREDENTIALS = YAML.load_file(ERB.new(File.new("config/whenever-elasticbeanstalk.yml").read))[ENV["RAILS_ENV"]]
@@ -38,4 +39,4 @@ if leader_instances.count > 1 && leader_instances.include?(instance_id)
 	ec2.instances[instance_id].tags["leader"] = "false"
 end
 
-`bundle exec setup_cron`
+`su -c "/usr/local/bin/bundle exec setup_cron" $EB_CONFIG_APP_USER`

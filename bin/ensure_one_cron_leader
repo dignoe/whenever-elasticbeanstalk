@@ -35,7 +35,7 @@ leader_instances = ec2.instances.inject([]) do |m, i|
 end
 
 if leader_instances.count < 1
-	`bundle exec create_cron_leader`
+  `su -c "/usr/local/bin/bundle exec create_cron_leader" $EB_CONFIG_APP_USER`
 elsif leader_instances.count > 1 && leader_instances.include?(instance_id)
-	`bundle exec remove_cron_leader`
+  `su -c "/usr/local/bin/bundle exec remove_cron_leader" $EB_CONFIG_APP_USER`
 end

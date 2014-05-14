@@ -4,6 +4,7 @@ require 'optparse'
 require 'rubygems'
 gem 'aws-sdk'
 require 'aws-sdk'
+require 'erb'
 
 options = {}
 
@@ -63,5 +64,5 @@ if leader_instances.count < 1
 end
 
 unless options[:no_update]
-	`bundle exec setup_cron`
+	`su -c "/usr/local/bin/bundle exec setup_cron" $EB_CONFIG_APP_USER`
 end
