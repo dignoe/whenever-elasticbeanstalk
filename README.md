@@ -99,7 +99,7 @@ end
 To run a task on all instance, omit the `roles` option.
 ```ruby
 every 1.minute do
-	command "touch /opt/elasticbeanstalk/support/.cron_check"
+	command "touch /opt/elasticbeanstalk/containerfiles/.cron_check"
 end
 ```
 

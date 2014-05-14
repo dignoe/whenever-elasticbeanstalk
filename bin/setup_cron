@@ -7,11 +7,11 @@ require 'aws-sdk'
 environment = ENV["RAILS_ENV"]
 AWS_CREDENTIALS = YAML.load_file("config/whenever-elasticbeanstalk.yml")[environment]
 
-instance_id = if File.exists?("/var/app/support/instance_id")
-  File.read("/var/app/support/instance_id")
+instance_id = if File.exists?("/var/app/containerfiles/instance_id")
+  File.read("/var/app/containerfiles/instance_id")
 else
   if id = `/opt/aws/bin/ec2-metadata -i | awk '{print $2}'`.strip
-    File.open("/var/app/support/instance_id", 'w') {|f| f.write(id) }
+    File.open("/var/app/containerfiles/instance_id", 'w') {|f| f.write(id) }
     id
   end
 end
