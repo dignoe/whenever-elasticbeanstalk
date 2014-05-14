@@ -5,7 +5,7 @@ gem 'aws-sdk'
 require 'aws-sdk'
 
 ENVIRONMENT_NAME_FILE = "/var/app/containerfiles/env_name"
-AWS_CREDENTIALS = YAML.load_file(ERB.new(File.new("config/whenever-elasticbeanstalk.yml").read))[ENV["RAILS_ENV"]]
+AWS_CREDENTIALS = YAML.load_file(ERB.new(File.new("config/whenever-elasticbeanstalk.yml").read).run)[ENV["RAILS_ENV"]]
 
 instance_id = if File.exists?("/var/app/containerfiles/instance_id")
 	File.read("/var/app/containerfiles/instance_id")
@@ -37,5 +37,5 @@ end
 if leader_instances.count < 1
   `su -c "/usr/local/bin/bundle exec create_cron_leader" $EB_CONFIG_APP_USER`
 elsif leader_instances.count > 1 && leader_instances.include?(instance_id)
-  `su -c "/usr/local/bin/bundle exec remove_cron_leader" $EB_CONFIG_APP_USER`
+  `su -c "/usr/local/bin/bundle exec create_cron_leader" $EB_CONFIG_APP_USER`
 end
