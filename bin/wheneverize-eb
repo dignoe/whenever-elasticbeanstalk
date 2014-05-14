@@ -78,18 +78,18 @@ files:
     group: root
     content: |
       #!/usr/bin/env bash
-      . /opt/elasticbeanstalk/support/envvars
+      . /opt/elasticbeanstalk/containerfiles/envvars
       cd $EB_CONFIG_APP_CURRENT
       bundle exec setup_cron
 
 container_commands:
   cron_01_set_leader:
-    test: test ! -f /opt/elasticbeanstalk/support/.cron-setup-complete
+    test: test ! -f /opt/elasticbeanstalk/containerfiles/.cron-setup-complete
     leader_only: true
     cwd: /var/app/ondeck
     command: bundle exec create_cron_leader --no-update
   cron_02_write_cron_setup_complete_file:
-    cwd: /opt/elasticbeanstalk/support
+    cwd: /opt/elasticbeanstalk/containerfiles
     command: touch .cron-setup-complete
 FILE
 
