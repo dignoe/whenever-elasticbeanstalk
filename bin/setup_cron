@@ -6,7 +6,7 @@ require 'aws-sdk'
 require 'erb'
 
 environment = ENV["RAILS_ENV"]
-AWS_CREDENTIALS = YAML.load_file(ERB.new(File.new("config/whenever-elasticbeanstalk.yml").read).run)[ENV["RAILS_ENV"]]
+AWS_CREDENTIALS = YAML.load_file(ERB.new(File.new("config/whenever-elasticbeanstalk.yml").read).result)[ENV["RAILS_ENV"]]
 
 instance_id = if File.exists?("/var/app/containerfiles/instance_id")
   File.read("/var/app/containerfiles/instance_id")
