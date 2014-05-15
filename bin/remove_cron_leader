@@ -4,6 +4,7 @@ gem 'aws-sdk'
 
 require 'aws-sdk'
 require 'erb'
+require 'erb'
 
 ENVIRONMENT_NAME_FILE = "/var/app/containerfiles/env_name"
 AWS_CREDENTIALS = YAML.load(ERB.new(File.new("config/whenever-elasticbeanstalk.yml").read).result)[ENV["RAILS_ENV"]]

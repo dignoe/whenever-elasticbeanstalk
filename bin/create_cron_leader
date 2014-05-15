@@ -5,6 +5,7 @@ require 'rubygems'
 gem 'aws-sdk'
 require 'aws-sdk'
 require 'erb'
+require 'erb'
 
 options = {}
 
