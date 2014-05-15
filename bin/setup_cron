@@ -25,3 +25,5 @@ if ec2.instances[instance_id].tags["leader"] == "true"
 else
 	`/usr/local/bin/bundle exec whenever --roles non-leader --set 'environment=#{environment}&path=/var/app/current' --update-crontab`
 end
+
+`crontab -l > /var/app/current/log/crontab.status`
