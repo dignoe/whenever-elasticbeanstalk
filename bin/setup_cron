@@ -20,10 +20,12 @@ end
 AWS.config(AWS_CREDENTIALS)
 ec2 = AWS::EC2.new
 
+unless (`echo $PATH`).match("/usr/local/bin")
+  `export PATH=/usr/local/bin:$PATH`
+end
+
 if ec2.instances[instance_id].tags["leader"] == "true"
 	`/usr/local/bin/bundle exec whenever --roles leader --set 'environment=#{environment}&path=/var/app/current' --update-crontab`
 else
 	`/usr/local/bin/bundle exec whenever --roles non-leader --set 'environment=#{environment}&path=/var/app/current' --update-crontab`
 end
-
-`crontab -l > /var/app/current/log/crontab.$USER.status`
