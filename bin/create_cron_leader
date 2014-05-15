@@ -5,7 +5,6 @@ require 'rubygems'
 gem 'aws-sdk'
 require 'aws-sdk'
 require 'erb'
-require 'erb'
 
 options = {}
 
@@ -52,7 +51,7 @@ else
 	env_name
 end
 
-leader_instances = ec2.instances.inject([]) do |m, i|
+leader_instances = ec2.instances.to_a.inject([]) do |m, i|
 	m << i.id if i.tags["elasticbeanstalk:environment-name"] == environment_name &&
 		i.status == :running &&
 		i.tags["leader"] == "true"
