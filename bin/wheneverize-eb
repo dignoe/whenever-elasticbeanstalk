@@ -53,7 +53,7 @@ schedule_content = <<-FILE
 # Learn more: http://github.com/javan/whenever
 
 every 1.minute do
-  command "cd /var/app/current && su -c \"/usr/local/bin/bundle exec ensure_one_cron_leader\" $EB_CONFIG_APP_USER"
+  command "cd /var/app/current && /usr/local/bin/bundle exec ensure_one_cron_leader"
 end
 FILE
 
