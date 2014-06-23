@@ -18,7 +18,8 @@ else
 	end
 end
 
-AWS.config(AWS_CREDENTIALS)
+# AWS.config(AWS_CREDENTIALS)
+AWS.config(:credential_provider => AWS::Core::CredentialProviders::EC2Provider.new)
 ec2 = AWS::EC2.new
 
 environment_name = if File.exists?(ENVIRONMENT_NAME_FILE)

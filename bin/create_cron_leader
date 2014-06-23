@@ -30,7 +30,6 @@ optparse.parse!
 ENVIRONMENT_NAME_FILE = "/var/app/containerfiles/env_name"
 AWS_CREDENTIALS = YAML.load(ERB.new(File.new("config/whenever-elasticbeanstalk.yml").read).result)[ENV["RAILS_ENV"]]
 
-
 instance_id = if File.exists?("/var/app/containerfiles/instance_id")
 	File.read("/var/app/containerfiles/instance_id")
 else
@@ -40,7 +39,8 @@ else
 	end
 end
 
-AWS.config(AWS_CREDENTIALS)
+# AWS.config(AWS_CREDENTIALS)
+AWS.config(:credential_provider => AWS::Core::CredentialProviders::EC2Provider.new)
 ec2 = AWS::EC2.new
 
 environment_name = if File.exists?(ENVIRONMENT_NAME_FILE)
