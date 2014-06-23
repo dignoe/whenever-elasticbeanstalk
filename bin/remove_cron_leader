@@ -20,6 +20,7 @@ end
 
 # AWS.config(AWS_CREDENTIALS)
 AWS.config(:credential_provider => AWS::Core::CredentialProviders::EC2Provider.new)
+AWS.config(:region => AWS_CREDENTIALS[:region]) unless AWS_CREDENTIALS[:region].nil?
 ec2 = AWS::EC2.new
 
 environment_name = if File.exists?(ENVIRONMENT_NAME_FILE)
