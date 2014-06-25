@@ -40,9 +40,9 @@ every 1.minute do
 end
 ```
 
-### Create AWS IAM user
+### EC2 Instance IAM Role Permissions
 
-In order for the scripts to work, you need to supply AWS credentials for a user with access to EC2 instances and tags. It is recommended to create a new user with limited access.
+In order for the scripts to work, you need to ensure that the EC2 Instance Role has access to EC2 instances and tags (further reading at [AWS Documentation](http://docs.aws.amazon.com/elasticbeanstalk/latest/dg/AWSHowTo.iam.roles.aeb.html) ). Ensure that your EC2 instance has at a minimum the following permissions:
 
 Example policy:
 ```json
@@ -66,19 +66,9 @@ Example policy:
 }
 ```
 
-Then add the credentials to your `config/whenever-elasticbeanstalk.yml` file.
+Make sure to add the `RACK_ENV` environment variable to your environment if you haven't already done so. This variable is not created automatically by AWS. You can add the following line to your `.elasticbeanstalk/optionsettings.appname-env` file:
 ```yaml
-staging:
-	access_key_id: 'your access key'
-	secret_access_key: 'your secret access key'
-  # If you are not using the default us-east-1 region, specify it here
-  # For available regions see: http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region
-  # region: 'eu-west-1'
-```
-
-Make sure to add the `RAILS_ENV` environment variable to your environment if you haven't already done so. This variable is not created automatically by AWS. You can add the following line to your `.elasticbeanstalk/optionsettings.appname-env` file:
-```yaml
-RAILS_ENV=staging
+RACK_ENV=staging
 ```
 
 ## Usage
@@ -99,7 +89,7 @@ end
 To run a task on all instance, omit the `roles` option.
 ```ruby
 every 1.minute do
-	command "touch /opt/elasticbeanstalk/support/.cron_check"
+	command "touch /opt/elasticbeanstalk/containerfiles/.cron_check"
 end
 ```
 
