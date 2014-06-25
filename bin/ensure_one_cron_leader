@@ -6,8 +6,6 @@ require           'aws-sdk'
 require           'erb'
 
 ENVIRONMENT_NAME_FILE = "/var/app/containerfiles/env_name"
-AWS_CREDENTIALS = YAML.load(ERB.new(File.new("config/whenever-elasticbeanstalk.yml").read).result)[ENV["RACK_ENV"]]
-
 instance_id = if File.exists?("/var/app/containerfiles/instance_id")
 	File.read("/var/app/containerfiles/instance_id")
 else
@@ -16,10 +14,10 @@ else
 		id
 	end
 end
+availability_zone = `/opt/aws/bin/ec2-metadata -i | awk '{print $2}'`.strip
+region            = availability_zone[0..availability_zone.length-1]
 
-# AWS.config(AWS_CREDENTIALS)
-AWS.config(:credential_provider => AWS::Core::CredentialProviders::EC2Provider.new)
-AWS.config(:region => AWS_CREDENTIALS['region']) unless AWS_CREDENTIALS['region'].nil?
+AWS.config({:credential_provider => AWS::Core::CredentialProviders::EC2Provider.new,:region => region})
 ec2 = AWS::EC2.new
 
 environment_name = if File.exists?(ENVIRONMENT_NAME_FILE)
