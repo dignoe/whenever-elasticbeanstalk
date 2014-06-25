@@ -1,9 +1,9 @@
 #!/usr/bin/ruby
-require 'rubygems'
-gem 'aws-sdk'
 
-require 'aws-sdk'
-require 'erb'
+require           'rubygems'
+gem               'aws-sdk'
+require           'aws-sdk'
+require           'erb'
 
 environment = ENV["RACK_ENV"]
 AWS_CREDENTIALS = YAML.load(ERB.new(File.new("config/whenever-elasticbeanstalk.yml").read).result)[ENV["RACK_ENV"]]

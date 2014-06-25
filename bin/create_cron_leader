@@ -1,13 +1,14 @@
 #!/usr/bin/ruby
 
-require 'optparse'
-require 'rubygems'
-gem 'aws-sdk'
-require 'aws-sdk'
-require 'erb'
+require           'optparse'
+require           'rubygems'
+gem               'aws-sdk'
+require           'aws-sdk'
+require           'erb'
+require_relative  'ec2_metadata'
 
+# Options Parsing
 options = {}
-
 optparse = OptionParser.new do |opts|
   opts.banner = "Usage: #{File.basename($0)} [options]"
  
@@ -24,24 +25,14 @@ optparse = OptionParser.new do |opts|
 	 exit
 	end
 end
-
 optparse.parse!
 
 ENVIRONMENT_NAME_FILE = "/var/app/containerfiles/env_name"
-AWS_CREDENTIALS = YAML.load(ERB.new(File.new("config/whenever-elasticbeanstalk.yml").read).result)[ENV["RACK_ENV"]]
 
-instance_id = if File.exists?("/var/app/containerfiles/instance_id")
-	File.read("/var/app/containerfiles/instance_id")
-else
-	if id = `/opt/aws/bin/ec2-metadata -i | awk '{print $2}'`.strip
-		File.open("/var/app/containerfiles/instance_id", 'w') {|f| f.write(id) }
-		id
-	end
-end
+instance_id = get_instance_id()
+region      = get_region()
 
-# AWS.config(AWS_CREDENTIALS)
-AWS.config(:credential_provider => AWS::Core::CredentialProviders::EC2Provider.new)
-AWS.config(:region => AWS_CREDENTIALS['region']) unless AWS_CREDENTIALS['region'].nil?
+AWS.config({:credential_provider => AWS::Core::CredentialProviders::EC2Provider.new,:region => region})
 ec2 = AWS::EC2.new
 
 environment_name = if File.exists?(ENVIRONMENT_NAME_FILE)
@@ -60,7 +51,6 @@ leader_instances = ec2.instances.to_a.inject([]) do |m, i|
 end
 
 if leader_instances.count < 1
-	instance_id = `/opt/aws/bin/ec2-metadata -i | awk '{print $2}'`.strip
 	ec2.instances[instance_id].tags["leader"] = "true"
 end
 

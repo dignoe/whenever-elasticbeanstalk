@@ -1,0 +1,28 @@
+#!/usr/bin/ruby
+
+require           'rubygems'
+gem               'aws-sdk'
+require           'aws-sdk'
+require           'erb'
+
+def get_instance_id
+  instance_id = if File.exists?("/var/app/containerfiles/instance_id")
+  	File.read("/var/app/containerfiles/instance_id")
+  else
+  	if id = `/opt/aws/bin/ec2-metadata -i | awk '{print $2}'`.strip
+  		File.open("/var/app/containerfiles/instance_id", 'w') {|f| f.write(id) }
+  		id
+  	end
+  end
+  instance_id
+end
+
+def get_availability_zone
+  availability_zone = `/opt/aws/bin/ec2-metadata -i | awk '{print $2}'`.strip
+end
+
+def get_region
+  availability_zone = get_availability_zone
+  region = availability_zone[0..availability_zone.length-1]
+  region
+end
