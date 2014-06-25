@@ -5,7 +5,6 @@ require           'rubygems'
 gem               'aws-sdk'
 require           'aws-sdk'
 require           'erb'
-require_relative  'ec2_metadata'
 
 ENVIRONMENT_NAME_FILE = "/var/app/containerfiles/env_name"
 
