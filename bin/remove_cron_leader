@@ -5,6 +5,12 @@ gem 'aws-sdk'
 require 'aws-sdk'
 require 'erb'
 
+bundle_exists = if RUBY_VERSION[0..2] == '1.8'
+ Gem.available?('bundler')
+else
+ Gem::Specification::find_all_by_name('bundler').any?
+end
+
 ENVIRONMENT_NAME_FILE = "/var/app/support/env_name"
 AWS_CREDENTIALS = YAML.load(ERB.new(File.read("config/whenever-elasticbeanstalk.yml")).result)[ENV["RAILS_ENV"]]
 
@@ -39,4 +45,4 @@ if leader_instances.count > 1 && leader_instances.include?(instance_id)
 	ec2.instances[instance_id].tags["leader"] = "false"
 end
 
-`bundle exec setup_cron`
+bundle_exists ? `bundle exec setup_cron` : `setup_cron`
