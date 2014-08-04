@@ -7,8 +7,8 @@ Gem::Specification.new do |gem|
   gem.name          = "whenever-elasticbeanstalk"
   gem.version       = Whenever::Elasticbeanstalk::VERSION
   gem.platform      = Gem::Platform::RUBY
-  gem.authors       = ["Chad McGimpsey"]
-  gem.email         = ["chad.mcgimpsey@gmail.com"]
+  gem.authors       = ["Chad McGimpsey","Joel Courtney"]
+  gem.email         = ["chad.mcgimpsey@gmail.com","euphemize@gmail.com"]
   gem.description   = %q{Use Whenever on AWS Elastic Beanstalk}
   gem.summary       = %q{Allows you to run cron jobs easily on one or all AWS Elastic Beanstalk instances.}
   gem.homepage      = "https://github.com/dignoe/whenever-elasticbeanstalk"
