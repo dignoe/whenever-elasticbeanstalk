@@ -14,8 +14,8 @@ Gem::Specification.new do |gem|
   gem.homepage      = "https://github.com/dignoe/whenever-elasticbeanstalk"
   gem.license       = 'MIT'
 
-  gem.add_dependency('whenever')
-  gem.add_dependency('aws-sdk')
+  gem.add_dependency('whenever','~> 0.9.2')
+  gem.add_dependency('aws-sdk', '~> 1.50.0')  
 
   gem.files         = `git ls-files`.split($/)
   gem.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
