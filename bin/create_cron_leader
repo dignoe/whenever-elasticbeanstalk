@@ -1,13 +1,16 @@
 #!/usr/bin/ruby
 
-require 'optparse'
-require 'rubygems'
-gem 'aws-sdk'
-require 'aws-sdk'
-require 'erb'
+require           'optparse'
+require           'rubygems'
+gem               'aws-sdk'
+require           'aws-sdk'
+require           'erb'
 
+EB_CONFIG_APP_SUPPORT = ENV['EB_CONFIG_APP_SUPPORT']
+ENVIRONMENT_NAME_FILE = File.join(EB_CONFIG_APP_SUPPORT,'env_name')
+
+# Options Parsing
 options = {}
-
 optparse = OptionParser.new do |opts|
   opts.banner = "Usage: #{File.basename($0)} [options]"
  
@@ -24,22 +27,20 @@ optparse = OptionParser.new do |opts|
 	 exit
 	end
 end
-
 optparse.parse!
 
-ENVIRONMENT_NAME_FILE = "/var/app/support/env_name"
-AWS_CREDENTIALS = YAML.load(ERB.new(File.read("config/whenever-elasticbeanstalk.yml")).result)[ENV["RAILS_ENV"]]
+instance_id = if File.exists?(File.join(EB_CONFIG_APP_SUPPORT,'instance_id'))
+  	File.read(File.join(EB_CONFIG_APP_SUPPORT,'instance_id'))
+  else
+  	if id = `/opt/aws/bin/ec2-metadata -i | awk '{print $2}'`.strip
+  		File.open(File.join(EB_CONFIG_APP_SUPPORT,'instance_id'), 'w') {|f| f.write(id) }
+  		id
+  	end
+  end
+availability_zone = `/opt/aws/bin/ec2-metadata -z | awk '{print $2}'`.strip
+region            =   availability_zone.slice(0..availability_zone.length-2)
 
-instance_id = if File.exists?("/var/app/support/instance_id")
-	File.read("/var/app/support/instance_id")
-else
-	if id = `/opt/aws/bin/ec2-metadata -i | awk '{print $2}'`.strip
-		File.open("/var/app/support/instance_id", 'w') {|f| f.write(id) }
-		id
-	end
-end
-
-AWS.config(AWS_CREDENTIALS)
+AWS.config({:credential_provider => AWS::Core::CredentialProviders::EC2Provider.new,:region => region})
 ec2 = AWS::EC2.new
 
 environment_name = if File.exists?(ENVIRONMENT_NAME_FILE)
@@ -50,7 +51,7 @@ else
 	env_name
 end
 
-leader_instances = ec2.instances.inject([]) do |m, i|
+leader_instances = ec2.instances.to_a.inject([]) do |m, i|
 	m << i.id if i.tags["elasticbeanstalk:environment-name"] == environment_name &&
 		i.status == :running &&
 		i.tags["leader"] == "true"
@@ -58,10 +59,9 @@ leader_instances = ec2.instances.inject([]) do |m, i|
 end
 
 if leader_instances.count < 1
-	instance_id = `/opt/aws/bin/ec2-metadata -i | awk '{print $2}'`.strip
 	ec2.instances[instance_id].tags["leader"] = "true"
 end
 
 unless options[:no_update]
-	`bundle exec setup_cron`
+	`/usr/local/bin/bundle exec setup_cron`
 end

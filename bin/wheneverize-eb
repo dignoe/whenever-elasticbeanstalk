@@ -4,6 +4,7 @@
 
 require 'optparse'
 require 'fileutils'
+require 'erb'
 
 OptionParser.new do |opts|
   opts.banner = "Usage: #{File.basename($0)} [path]"
@@ -52,7 +53,7 @@ schedule_content = <<-FILE
 # Learn more: http://github.com/javan/whenever
 
 every 1.minute do
-  command "cd /var/app/current && bundle exec ensure_one_cron_leader"
+  command "cd /var/app/current && /usr/local/bin/bundle exec ensure_one_cron_leader"
 end
 FILE
 
@@ -72,24 +73,33 @@ end
 
 eb_config_content = <<-FILE
 files:
+  # Reload the on deployment
   /opt/elasticbeanstalk/hooks/appdeploy/post/10_reload_cron.sh:
     mode: "00700"
     owner: root
     group: root
     content: |
       #!/usr/bin/env bash
-      . /opt/elasticbeanstalk/support/envvars
+      . /opt/elasticbeanstalk/containerfiles/envvars
       cd $EB_CONFIG_APP_CURRENT
-      bundle exec setup_cron
-
+      su -c "/usr/local/bin/bundle exec setup_cron" $EB_CONFIG_APP_USER
+  # Add Bundle to the PATH
+  "/etc/profile.d/bundle.sh":
+    mode: "000755"
+    owner: root
+    group: root
+    content: |
+      #!/usr/bin/env bash
+      export PATH=$PATH:/usr/local/bin
+    encoding: plain
 container_commands:
   cron_01_set_leader:
-    test: test ! -f /opt/elasticbeanstalk/support/.cron-setup-complete
+    test: test ! -f /opt/elasticbeanstalk/containerfiles/.cron-setup-complete
     leader_only: true
     cwd: /var/app/ondeck
-    command: bundle exec create_cron_leader --no-update
+    command: su -c "/usr/local/bin/bundle exec create_cron_leader --no-update" $EB_CONFIG_APP_USER
   cron_02_write_cron_setup_complete_file:
-    cwd: /opt/elasticbeanstalk/support
+    cwd: /opt/elasticbeanstalk/containerfiles
     command: touch .cron-setup-complete
 FILE
 
