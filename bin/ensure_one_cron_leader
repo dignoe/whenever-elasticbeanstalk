@@ -7,14 +7,14 @@ require           'erb'
 
 EB_CONFIG_APP_SUPPORT = ENV['EB_CONFIG_APP_SUPPORT']
 ENVIRONMENT_NAME_FILE = File.join(EB_CONFIG_APP_SUPPORT,'env_name')
-instance_id = if File.exists?(File.join(EB_CONFIG_APP_SUPPORT,instance_id))
-	File.read(File.join(EB_CONFIG_APP_SUPPORT,instance_id))
-else
-	if id = `/opt/aws/bin/ec2-metadata -i | awk '{print $2}'`.strip
-		File.open(File.join(EB_CONFIG_APP_SUPPORT,instance_id), 'w') {|f| f.write(id) }
-		id
-	end
-end
+instance_id = if File.exists?(File.join(EB_CONFIG_APP_SUPPORT,'instance_id'))
+  	File.read(File.join(EB_CONFIG_APP_SUPPORT,'instance_id'))
+  else
+  	if id = `/opt/aws/bin/ec2-metadata -i | awk '{print $2}'`.strip
+  		File.open(File.join(EB_CONFIG_APP_SUPPORT,'instance_id'), 'w') {|f| f.write(id) }
+  		id
+  	end
+  end
 availability_zone = `/opt/aws/bin/ec2-metadata -z | awk '{print $2}'`.strip
 region            =  availability_zone.slice(0..availability_zone.length-2)
 
