@@ -81,8 +81,7 @@ files:
     content: |
       #!/usr/bin/env bash
       . /opt/elasticbeanstalk/containerfiles/envvars
-      cd $EB_CONFIG_APP_CURRENT
-      su -c "/usr/local/bin/bundle exec setup_cron" $EB_CONFIG_APP_USER
+      su -l -c "cd $EB_CONFIG_APP_CURRENT && /usr/local/bin/bundle exec setup_cron" $EB_CONFIG_APP_USER
   # Add Bundle to the PATH
   "/etc/profile.d/bundle.sh":
     mode: "000755"
@@ -92,6 +91,10 @@ files:
       #!/usr/bin/env bash
       export PATH=$PATH:/usr/local/bin
     encoding: plain
+commands:
+  create_bundle_symlink_patch:
+    command: ln -s `su -l -c "which bundle" $EB_CONFIG_APP_USER` /usr/local/bin/bundle
+    ignoreErrors: true
 container_commands:
   cron_01_set_leader:
     test: test ! -f /opt/elasticbeanstalk/containerfiles/.cron-setup-complete
