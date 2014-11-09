@@ -110,8 +110,8 @@ files:
         echo "containerfiles"
         grep -Fwq "export EB_CONFIG_SUPPORT" /opt/elasticbeanstalk/containerfiles/envvars.d/appenv
         if [ $? -eq 1 ]; then
-          echo "export EB_CONFIG_SUPPORT=/opt/elasticbeanstalk/support"
-          echo "export EB_CONFIG_SUPPORT=/opt/elasticbeanstalk/support" >> /opt/elasticbeanstalk/support/envvars.d/appenv;
+          echo "export EB_CONFIG_SUPPORT=/opt/elasticbeanstalk/containerfiles"
+          echo "export EB_CONFIG_SUPPORT=/opt/elasticbeanstalk/containerfiles" >> /opt/elasticbeanstalk/containerfiles/envvars.d/appenv;
         fi
       elif test -d /opt/elasticbeanstalk/support; then
         echo "support"
