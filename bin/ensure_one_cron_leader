@@ -5,7 +5,7 @@ gem               'aws-sdk'
 require           'aws-sdk'
 require           'erb'
 
-EB_CONFIG_APP_SUPPORT = ENV['EB_CONFIG_APP_SUPPORT']
+EB_CONFIG_APP_SUPPORT = "/opt/elasticbeanstalk/support"
 ENVIRONMENT_NAME_FILE = File.join(EB_CONFIG_APP_SUPPORT,'env_name')
 instance_id = if File.exists?(File.join(EB_CONFIG_APP_SUPPORT,'instance_id'))
   	File.read(File.join(EB_CONFIG_APP_SUPPORT,'instance_id'))
@@ -37,7 +37,7 @@ leader_instances = ec2.instances.to_a.inject([]) do |m, i|
 end
 
 if leader_instances.count < 1
-  `/usr/local/bin/bundle exec create_cron_leader`
+  `./bin/create_cron_leader`
 elsif leader_instances.count > 1 && leader_instances.include?(instance_id)
-  `/usr/local/bin/bundle exec create_cron_leader`
+  `./bin/create_cron_leader`
 end

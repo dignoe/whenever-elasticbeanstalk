@@ -5,7 +5,7 @@ gem               'aws-sdk'
 require           'aws-sdk'
 require           'erb'
 
-EB_CONFIG_APP_SUPPORT = ENV['EB_CONFIG_APP_SUPPORT']
+EB_CONFIG_APP_SUPPORT = "/opt/elasticbeanstalk/support"
 ENVIRONMENT = ENV["RACK_ENV"]
 instance_id = if File.exists?(File.join(EB_CONFIG_APP_SUPPORT,'instance_id'))
   	File.read(File.join(EB_CONFIG_APP_SUPPORT,'instance_id'))
@@ -26,7 +26,7 @@ unless (`echo $PATH`).match("/usr/local/bin")
 end
 
 if ec2.instances[instance_id].tags["leader"] == "true"
-	`/usr/local/bin/bundle exec whenever --roles leader --set 'environment=#{ENVIRONMENT}&path=/var/app/current' --update-crontab`
+	`./bin/whenever --roles leader --set 'environment=#{ENVIRONMENT}&path=/var/app/current' --update-crontab`
 else
-	`/usr/local/bin/bundle exec whenever --roles non-leader --set 'environment=#{ENVIRONMENT}&path=/var/app/current' --update-crontab`
+	`./bin/whenever --roles non-leader --set 'environment=#{ENVIRONMENT}&path=/var/app/current' --update-crontab`
 end
