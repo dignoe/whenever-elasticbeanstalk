@@ -22,8 +22,7 @@ end
 
 #--set 'environment=#{ENVIRONMENT}&path=/var/app/current'
 if ec2.instances[instance_id].tags["leader"] == "true"
-	`./bin/whenever --roles leader --update-crontab contently --user root`
+	`./bin/whenever --roles leader --set 'environment=#{ENVIRONMENT}&path=/var/app/current' --update-crontab contently --user root`
 else
-	`./bin/whenever --roles non-leader --update-crontab contently --user root`
+	`./bin/whenever --roles non-leader --set 'environment=#{ENVIRONMENT}&path=/var/app/current' --update-crontab contently --user root`
 end
-# --update-crontab contently
