@@ -20,9 +20,5 @@ unless (`echo $PATH`).match("/usr/local/bin")
   `export PATH=/usr/local/bin:$PATH`
 end
 
-#--set 'environment=#{ENVIRONMENT}&path=/var/app/current'
-if ec2.instances[instance_id].tags["leader"] == "true"
-	`./bin/whenever --roles leader --set 'environment=#{ENVIRONMENT}&path=/var/app/current' --update-crontab contently --user root`
-else
-	`./bin/whenever --roles non-leader --set 'environment=#{ENVIRONMENT}&path=/var/app/current' --update-crontab contently --user root`
-end
+roles = ec2.instances[instance_id].tags["leader"].eql?("true") ? "leader" : "non-leader"
+`./bin/whenever --roles #{roles} --set 'environment=#{ENVIRONMENT}&path=/var/app/current' --update-crontab --user root`
