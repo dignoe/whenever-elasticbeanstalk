@@ -2,7 +2,8 @@
 
 require           'optparse'
 require           'rubygems'
-gem               'aws-sdk'
+gem               'aws-sdk-v1'
+require           'aws-sdk-v1'
 require           'aws-sdk'
 require           'erb'
 
