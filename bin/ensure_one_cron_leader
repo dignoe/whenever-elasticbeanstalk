@@ -3,7 +3,6 @@
 require           'rubygems'
 gem               'aws-sdk-v1'
 require           'aws-sdk-v1'
-require           'aws-sdk'
 require           'erb'
 
 EB_CONFIG_APP_SUPPORT = "/opt/elasticbeanstalk/support"
