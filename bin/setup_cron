@@ -21,4 +21,4 @@ unless (`echo $PATH`).match("/usr/local/bin")
 end
 
 roles = ec2.instances[instance_id].tags["leader"].eql?("true") ? ["leader", ENVIRONMENT] : ["non-leader"]
-`/usr/local/bin/bundle exec whenever --roles #{roles.join(',')} --set 'environment=#{ENVIRONMENT}&path=/var/app/current' --update-crontab --user root`
+`/usr/local/bin/bundle exec whenever --roles #{roles.join(',')} --set 'environment=#{ENVIRONMENT}&path=/var/app/current' --update-crontab`
