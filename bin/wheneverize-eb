@@ -80,11 +80,21 @@ files:
     group: root
     content: |
       #!/usr/bin/env bash
-      su -l -s /bin/bash -c "cd $(/opt/elasticbeanstalk/bin/get-config container -k app_deploy_dir) && /usr/local/bin/bundle exec setup_cron" $(/opt/elasticbeanstalk/bin/get-config container -k app_user)
+      # Loading environment data
+      EB_SCRIPT_DIR=$(/opt/elasticbeanstalk/bin/get-config container -k script_dir)
+      EB_SUPPORT_DIR=$(/opt/elasticbeanstalk/bin/get-config container -k support_dir)
+      EB_APP_CURRENT_DIR=$(/opt/elasticbeanstalk/bin/get-config container -k app_deploy_dir)
+
+      # Setting up correct environment and ruby version so that bundle can load all gems
+      . $EB_SUPPORT_DIR/envvars
+      . $EB_SCRIPT_DIR/use-app-ruby.sh
+
+      cd $EB_APP_CURRENT_DIR
+      /usr/local/bin/bundle exec setup_cron
 commands:
   create_bundle_symlink_patch:
     test: test ! -f /usr/local/bin/bundle
-    command: ln -s `su -l -c "which bundle" $(/opt/elasticbeanstalk/bin/get-config container -k app_user)` /usr/local/bin/bundle
+    command: ln -s `su -l -s /bin/bash -c "which bundle" $(/opt/elasticbeanstalk/bin/get-config container -k app_user)` /usr/local/bin/bundle
     ignoreErrors: true
 container_commands:
   cron_01_set_leader:
