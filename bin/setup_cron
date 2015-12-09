@@ -1,32 +1,24 @@
 #!/usr/bin/ruby
 
 require           'rubygems'
-gem               'aws-sdk'
-require           'aws-sdk'
+gem               'aws-sdk-v1'
+require           'aws-sdk-v1'
 require           'erb'
 
-EB_CONFIG_APP_SUPPORT = ENV['EB_CONFIG_APP_SUPPORT']
+EB_CONFIG_APP_SUPPORT = "/opt/elasticbeanstalk/support"
 ENVIRONMENT = ENV["RACK_ENV"]
-instance_id = if File.exists?(File.join(EB_CONFIG_APP_SUPPORT,'instance_id'))
-  	File.read(File.join(EB_CONFIG_APP_SUPPORT,'instance_id'))
-  else
-  	if id = `/opt/aws/bin/ec2-metadata -i | awk '{print $2}'`.strip
-  		File.open(File.join(EB_CONFIG_APP_SUPPORT,'instance_id'), 'w') {|f| f.write(id) }
-  		id
-  	end
-  end
+
+instance_id = `/opt/aws/bin/ec2-metadata -i | awk '{print $2}'`.strip
 availability_zone = `/opt/aws/bin/ec2-metadata -z | awk '{print $2}'`.strip
-region            =  availability_zone.slice(0..availability_zone.length-2)
+region            =   availability_zone.slice(0..availability_zone.length-2)
 
 AWS.config({:credential_provider => AWS::Core::CredentialProviders::EC2Provider.new,:region => region})
 ec2 = AWS::EC2.new
+environment_name = ec2.instances[instance_id].tags["elasticbeanstalk:environment-name"]
 
 unless (`echo $PATH`).match("/usr/local/bin")
   `export PATH=/usr/local/bin:$PATH`
 end
 
-if ec2.instances[instance_id].tags["leader"] == "true"
-	`/usr/local/bin/bundle exec whenever --roles leader --set 'environment=#{ENVIRONMENT}&path=/var/app/current' --update-crontab`
-else
-	`/usr/local/bin/bundle exec whenever --roles non-leader --set 'environment=#{ENVIRONMENT}&path=/var/app/current' --update-crontab`
-end
+roles = ec2.instances[instance_id].tags["leader"].eql?("true") ? ["leader", ENVIRONMENT] : ["non-leader"]
+`/usr/local/bin/bundle exec whenever --roles #{roles.join(',')} --set 'environment=#{ENVIRONMENT}&path=/var/app/current' --update-crontab --user root`

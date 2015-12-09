@@ -1,34 +1,20 @@
 #!/usr/bin/ruby
 
 require           'rubygems'
-gem               'aws-sdk'
-require           'aws-sdk'
+gem               'aws-sdk-v1'
+require           'aws-sdk-v1'
 require           'erb'
 
-EB_CONFIG_APP_SUPPORT = ENV['EB_CONFIG_APP_SUPPORT']
+EB_CONFIG_APP_SUPPORT = "/opt/elasticbeanstalk/support"
 ENVIRONMENT_NAME_FILE = File.join(EB_CONFIG_APP_SUPPORT,'env_name')
 
-instance_id = if File.exists?(File.join(EB_CONFIG_APP_SUPPORT,'instance_id'))
-  	File.read(File.join(EB_CONFIG_APP_SUPPORT,'instance_id'))
-  else
-  	if id = `/opt/aws/bin/ec2-metadata -i | awk '{print $2}'`.strip
-  		File.open(File.join(EB_CONFIG_APP_SUPPORT,'instance_id'), 'w') {|f| f.write(id) }
-  		id
-  	end
-  end
+instance_id = `/opt/aws/bin/ec2-metadata -i | awk '{print $2}'`.strip
 availability_zone = `/opt/aws/bin/ec2-metadata -z | awk '{print $2}'`.strip
-region            =  availability_zone.slice(0..availability_zone.length-2)
+region            =   availability_zone.slice(0..availability_zone.length-2)
 
 AWS.config({:credential_provider => AWS::Core::CredentialProviders::EC2Provider.new,:region => region})
 ec2 = AWS::EC2.new
-
-environment_name = if File.exists?(ENVIRONMENT_NAME_FILE)
-  File.read(ENVIRONMENT_NAME_FILE)
-else
-	env_name = ec2.instances[instance_id].tags["elasticbeanstalk:environment-name"]
-	File.open(ENVIRONMENT_NAME_FILE, 'w') {|f| f.write(env_name) }
-	env_name
-end
+environment_name = ec2.instances[instance_id].tags["elasticbeanstalk:environment-name"]
 
 leader_instances = ec2.instances.to_a.inject([]) do |m, i|
 	m << i.id if i.tags["elasticbeanstalk:environment-name"] == environment_name &&
@@ -41,4 +27,4 @@ if leader_instances.count > 1 && leader_instances.include?(instance_id)
 	ec2.instances[instance_id].tags["leader"] = "false"
 end
 
-`/usr/local/bin/bundle exec setup_cron`
+`./bin/setup_cron`

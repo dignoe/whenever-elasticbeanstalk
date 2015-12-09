@@ -80,65 +80,28 @@ files:
     group: root
     content: |
       #!/usr/bin/env bash
-      # /opt/elasticbeanstalk/hooks/appdeploy/post/10_reload_cron.sh
+      # Loading environment data
+      EB_SCRIPT_DIR=$(/opt/elasticbeanstalk/bin/get-config container -k script_dir)
+      EB_SUPPORT_DIR=$(/opt/elasticbeanstalk/bin/get-config container -k support_dir)
+      EB_APP_CURRENT_DIR=$(/opt/elasticbeanstalk/bin/get-config container -k app_deploy_dir)
 
-      if test -d /opt/elasticbeanstalk/containerfiles; then
-        . /opt/elasticbeanstalk/containerfiles/envvars
-      elif test -d /opt/elasticbeanstalk/support; then
-        . /opt/elasticbeanstalk/support/envvars
-      fi
-      
-      su -l -c "cd $EB_CONFIG_APP_CURRENT && /usr/local/bin/bundle exec setup_cron" $EB_CONFIG_APP_USER
-  # Add Bundle to the PATH
-  "/etc/profile.d/bundle.sh":
-    mode: "000755"
-    owner: root
-    group: root
-    content: |
-      #!/usr/bin/env bash
-      export PATH=$PATH:/usr/local/bin
-    encoding: plain
-  # Update /opt/elasticbeanstalk/###/envvars.d/appenv to include EB_CONFIG_SUPPORT
-  /tmp/update_appenv_include_eb_config_support.sh:
-    mode: "000755"
-    owner: root
-    group: root
-    content: |
-      #!/usr/bin/env bash
-      # update_appenv_include_eb_config_support.sh
-      if test -d /opt/elasticbeanstalk/containerfiles; then
-        echo "containerfiles"
-        grep -Fwq "export EB_CONFIG_SUPPORT" /opt/elasticbeanstalk/containerfiles/envvars.d/appenv
-        if [ $? -eq 1 ]; then
-          echo "export EB_CONFIG_SUPPORT=/opt/elasticbeanstalk/containerfiles"
-          echo "export EB_CONFIG_SUPPORT=/opt/elasticbeanstalk/containerfiles" >> /opt/elasticbeanstalk/containerfiles/envvars.d/appenv;
-        fi
-      elif test -d /opt/elasticbeanstalk/support; then
-        echo "support"
-        grep -Fwq "export EB_CONFIG_SUPPORT" /opt/elasticbeanstalk/support/envvars.d/appenv
-        if [ $? -eq 1 ]; then
-          echo "export EB_CONFIG_SUPPORT=/opt/elasticbeanstalk/support"
-          echo "export EB_CONFIG_SUPPORT=/opt/elasticbeanstalk/support" >> /opt/elasticbeanstalk/support/envvars.d/appenv;
-        fi
-      fi
-    encoding: plain
+      # Setting up correct environment and ruby version so that bundle can load all gems
+      . $EB_SUPPORT_DIR/envvars
+      . $EB_SCRIPT_DIR/use-app-ruby.sh
+
+      cd $EB_APP_CURRENT_DIR
+      /usr/local/bin/bundle exec setup_cron
 commands:
   create_bundle_symlink_patch:
     test: test ! -f /usr/local/bin/bundle
-    command: ln -s `su -l -c "which bundle" $EB_CONFIG_APP_USER` /usr/local/bin/bundle
-    ignoreErrors: true
-  a_elasticbeanstalk_support_path:
-    command: . /tmp/update_appenv_include_eb_config_support.sh
-    ignoreErrors: false
-  zz_check_support_path_environment_variable:
-    command: echo $EB_SUPPORT
+    command: ln -s `su -l -s /bin/bash -c "which bundle" $(/opt/elasticbeanstalk/bin/get-config container -k app_user)` /usr/local/bin/bundle
     ignoreErrors: true
 container_commands:
   cron_01_set_leader:
     test: test ! -f /opt/elasticbeanstalk/containerfiles/.cron-setup-complete || test ! -f /opt/elasticbeanstalk/support/.cron-setup-complete
     leader_only: true
     cwd: /var/app/ondeck
-    command: su -c "/usr/local/bin/bundle exec create_cron_leader --no-update" $EB_CONFIG_APP_USER
+    command: su -l -s /bin/bash -c "/usr/local/bin/bundle exec create_cron_leader --no-update" $(/opt/elasticbeanstalk/bin/get-config container -k app_user)
   cron_02_write_cron_setup_complete_file_containerfiles:
     test: test -d /opt/elasticbeanstalk/containerfiles
     command: touch /opt/elasticbeanstalk/containerfiles/.cron-setup-complete
