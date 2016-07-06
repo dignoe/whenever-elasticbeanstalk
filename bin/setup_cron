@@ -2,27 +2,18 @@
 require           'rubygems'
 gem               'aws-sdk'
 require           'aws-sdk'
-require           'erb'
 
 EB_CONFIG_APP_SUPPORT = ENV['EB_CONFIG_APP_SUPPORT']
 ENVIRONMENT = ENV['RACK_ENV']
-instance_id = if File.exist?(File.join(EB_CONFIG_APP_SUPPORT, 'instance_id'))
-                File.read(File.join(EB_CONFIG_APP_SUPPORT, 'instance_id'))
-              elsif (id = `/opt/aws/bin/ec2-metadata -i | awk '{print $2}'`.strip)
-                File.open(File.join(EB_CONFIG_APP_SUPPORT, 'instance_id'), 'w') { |f| f.write(id) }
-              end
-availability_zone = `/opt/aws/bin/ec2-metadata -z | awk '{print $2}'`.strip
-region = availability_zone.slice(0..availability_zone.length - 2)
 
-AWS.config(credential_provider: AWS::Core::CredentialProviders::EC2Provider.new, region: region)
-ec2 = AWS::EC2.new
+whenever_eb = Whenever::Elasticbeanstalk.new(Aws::InstanceProfileCredentials.new)
 
 `export PATH=/usr/local/bin:$PATH` unless `echo $PATH` =~ '/usr/local/bin'
 
 command_prefix = '/usr/local/bin/bundle exec whenever'
 command_suffix = " --set 'environment=#{ENVIRONMENT}&path=/var/app/current' --update-crontab"
 
-if ec2.instances[instance_id].tags['leader'] == 'true'
+if whenever_eb.leader?
   `#{[command_suffix, '--roles leader', command_prefix].join(' ')}`
 else
   `#{[command_suffix, '--roles non-leader', command_prefix].join(' ')}`

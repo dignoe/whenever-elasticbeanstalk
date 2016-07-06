@@ -3,10 +3,8 @@ require           'optparse'
 require           'rubygems'
 gem               'aws-sdk'
 require           'aws-sdk'
-require           'erb'
 
 EB_CONFIG_APP_SUPPORT = ENV['EB_CONFIG_APP_SUPPORT']
-ENVIRONMENT_NAME_FILE = File.join(EB_CONFIG_APP_SUPPORT, 'env_name')
 
 # Options Parsing
 options = {}
@@ -28,20 +26,5 @@ optparse = OptionParser.new do |opts|
 end
 optparse.parse!
 
-Whenever::Elasticbeanstalk
-
-ec2_instance_id = instance_id()
-ec2_availability_zone = availability_zone
-region = availability_zone.slice(0..availability_zone.length - 2)
-
-credentials = Aws::InstanceProfileCredentials.new
-ec2_resource = Aws::EC2::Resource.new(region: region, credentials: credentials)
-eb_environment_name = environment_name(ec2_instance_id)
-ec2_leader_instances = leader_instances(ec2_resource, eb_environment_name)
-
-if ec2_leader_instances.count < 1
-  tags = [{ key: 'leader', value: 'true' }]
-  ec2_resource.create_tags(resources: [ec2_instance_id], tags: tags)
-end
-
-`/usr/local/bin/bundle exec setup_cron` unless options[:no_update]
+whenever_eb = Whenever::Elasticbeanstalk.new(Aws::InstanceProfileCredentials.new)
+whenever_eb.create_cron_leader(no_update: options[:no_update])
