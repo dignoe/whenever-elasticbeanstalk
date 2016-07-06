@@ -1,5 +1,5 @@
 module Whenever
-  module Elasticbeanstalk
+  class Elasticbeanstalk
     VERSION = '1.1.7'.freeze
   end
 end

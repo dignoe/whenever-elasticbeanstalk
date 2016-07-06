@@ -9,13 +9,28 @@ Gem::Specification.new do |s|
   s.version       = Whenever::Elasticbeanstalk::VERSION
   s.platform      = Gem::Platform::RUBY
   s.date          = '2016-07-06'
-  s.authors       = ['Chad McGimpsey', 'Joel Courtney', 'Taylor Boyko']
-  s.email         = ['chad.mcgimpsey@gmail.com', 'euphemize@gmail.com', 'taylorboyko@gmail.com']
+  s.authors       = [
+    'Chad McGimpsey',
+    'Joel Courtney',
+    'Taylor Boyko'
+  ]
+  s.email = [
+    'chad.mcgimpsey@gmail.com',
+    'euphemize@gmail.com',
+    'taylorboyko@gmail.com'
+  ]
   s.description   = 'Use Whenever on AWS Elastic Beanstalk'
-  s.summary       = 'Allows you to run cron jobs easily on one or all AWS Elastic Beanstalk instances.'
+  s.summary       = 'Allows you to run cron jobs easily on one'\
+                    'or all AWS Elastic Beanstalk instances.'
   s.homepage      = 'https://github.com/dignoe/whenever-elasticbeanstalk'
   s.license       = 'MIT'
-  s.files         = Dir['lib/**/*', 'spec/**/*', 'test/**/*', 'features/**/*', 'bin/*']
+  s.files         = Dir[
+    'lib/**/*',
+    'spec/**/*',
+    'test/**/*',
+    'features/**/*',
+    'bin/*'
+  ]
   s.executables   = s.files.grep(%r{^bin/}) { |f| File.basename(f) }
   s.test_files    = s.files.grep(%r{^(test|spec|features)/})
   s.require_paths = %w(lib)

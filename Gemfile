@@ -1,4 +1,4 @@
-source 'https://rubygems.org'
-
-# Specify your gem's dependencies in whenever-elasticbeanstalk.gemspec
-gemspec
+source 'https://rubygems.org' do
+  # Specify your gem's dependencies in aemo.gemspec
+  gemspec
+end

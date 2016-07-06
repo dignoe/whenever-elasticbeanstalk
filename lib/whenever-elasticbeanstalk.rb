@@ -1,7 +1,166 @@
+require 'rubygems'
+require 'aws-sdk'
 require 'whenever-elasticbeanstalk/version'
 
 module Whenever
-  module Elasticbeanstalk
-    # Your code goes here...
+  # [Whenever::Elasticbeanstalk]
+  #
+  # @since 0.1.0
+  # @note Overhauled in 0.2.0 to add in functionality for
+  class Elasticbeanstalk
+
+    # Constants
+    ENVIRONMENT = ENV['RACK_ENV'].freeze
+    ENVIRONMENT_NAME_TAG = 'elasticbeanstalk:environment-name'.freeze
+
+    # Initializes a new Whenever::Elasticbeanstalk
+    #
+    # @param [Aws::CredentialProvider] credentials
+    # @param [Hash] options
+    # @options options [String] :eb_config_app_support
+    # @return [self]
+    def initialize(credentials, options = {})
+      defaults = { eb_config_app_support: ENV['EB_CONFIG_APP_SUPPORT'] }
+      options = defaults.merge(options)
+
+      @credentials = credentials
+      @config_app_support = options[:eb_config_app_support]
+      @instance_id = instance_id
+      @availability_zone = `/opt/aws/bin/ec2-metadata -z | awk '{print $2}'`.strip
+      @region = @availability_zone.slice(0..@availability_zone.length - 2)
+
+      @ec2_resource = Aws::EC2::Resource.new(region: @region, credentials: @credentials)
+      @environment_name = environment_name
+    end
+
+    # Returns the current EC2 instance's id
+    #
+    # @return [String] current Aws::EC2::Instance#id
+    def instance_id
+      filename = File.join(@config_app_support, 'instance_id')
+      if File.exist?(filename)
+        File.read(filename)
+      elsif (id = `/opt/aws/bin/ec2-metadata -i | awk '{print $2}'`.strip)
+        File.open(filename, 'w') { |f| f.write(id) }
+        id
+      end
+    end
+
+    # Returns an Aws::EC2::Instance for the current EC2 instance
+    #
+    # @return [Aws::EC2::Instance] current Aws::EC2::Instance
+    def instance
+      @ec2_resource.instance(instance_id)
+    end
+
+    # Instances in the application
+    #
+    # @return [Array<Aws::EC2::Instance>]
+    def instances
+      filters = [
+        {
+          key: "tag:#{ENVIRONMENT_NAME_TAG}",
+          value: @environment_name
+        },
+        {
+          name: 'instance-state-name',
+          values: ['running']
+        }
+      ]
+
+      ec2_resource.instances(filters: filters).each_with_object([]) do |i, m|
+        m << i.id
+      end
+    end
+
+    # Leader Instances in the application
+    #
+    # @return [Array<Aws::EC2::Instance>]
+    def leader_instances
+      filters = [
+        {
+          key: "tag:#{ENVIRONMENT_NAME_TAG}",
+          value: @environment_name
+        },
+        {
+          name: 'tag:leader',
+          values: ['true']
+        },
+        {
+          name: 'instance-state-name',
+          values: ['running']
+        }
+      ]
+
+      ec2_resource.instances(filters: filters).each_with_object([]) do |i, m|
+        m << i.id
+      end
+    end
+
+    # Determines the Environment Name from the tag 'elasticbeanstalk:environment-name'
+    # Writes to ENVIRONMENT_NAME_FILE
+    #
+    # @return [String] description of returned object
+    def environment_name
+      filename = File.join(@config_app_support, 'env_name')
+      if File.exist?(filename)
+        File.read(filename)
+      else
+        ec2_instance = @ec2_resource.instance(@instance_id)
+        env_name_tag = @ec2_instance.tags.find { |t| t.key == ENVIRONMENT_NAME_TAG }
+        File.open(filename, 'w') { |f| f.write(env_name_tag.value) }
+        env_name
+      end
+    end
+
+    # Creates a CRON Leader Instance if there is none set
+    #
+    # @param [Hash] options = {}
+    # @option options [Boolean] :no_update
+    # @return [void]
+    def create_cron_leader(options = {})
+      if leader_instances.count < 1
+        tags = [{ key: 'leader', value: 'true' }]
+        @ec2_resource.create_tags(resources: [@instance_id], tags: tags)
+      end
+
+      `/usr/local/bin/bundle exec setup_cron` unless options[:no_update]
+    end
+
+    # Removes CRON leaders if more than one present
+    #
+    # @return [void]
+    def ensure_one_cron_leader
+      if leader_instances.count < 1
+        `/usr/local/bin/bundle exec create_cron_leader`
+      elsif leader_instances.count > 1 && leader_instances.include?(@instance_id)
+        set_leader_tag('false')
+      end
+    end
+
+    # Removes Instance from CRON leaders if more than one present
+    # Then sets up the cron
+    #
+    # @return [void]
+    def remove_cron_leader
+      if leader_instances.count > 1 && leader_instances.include?(@instance_id)
+        set_leader_tag('false')
+      end
+
+      `/usr/local/bin/bundle exec setup_cron`
+    end
+
+    def set_leader_tag(value)
+      tags = [{ key: 'leader', value: 'false' }]
+      @ec2_resource.create_tags(resources: [@instance_id], tags: tags)
+    end
+
+    # Is the instance a leader?
+    #
+    # @return [Boolean]
+    def leader?
+      leader_tag = @instance.tags.find { |t| t.name == 'leader' }
+      !leader.nil? && (leader_tag.value.downcase == 'true')
+    end
   end
 end
