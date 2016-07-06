@@ -6,27 +6,25 @@ require           'aws-sdk'
 require           'erb'
 
 EB_CONFIG_APP_SUPPORT = ENV['EB_CONFIG_APP_SUPPORT']
-ENVIRONMENT = ENV["RACK_ENV"]
-instance_id = if File.exists?(File.join(EB_CONFIG_APP_SUPPORT,'instance_id'))
-  	File.read(File.join(EB_CONFIG_APP_SUPPORT,'instance_id'))
-  else
-  	if id = `/opt/aws/bin/ec2-metadata -i | awk '{print $2}'`.strip
-  		File.open(File.join(EB_CONFIG_APP_SUPPORT,'instance_id'), 'w') {|f| f.write(id) }
-  		id
-  	end
-  end
+ENVIRONMENT = ENV['RACK_ENV']
+instance_id = if File.exist?(File.join(EB_CONFIG_APP_SUPPORT, 'instance_id'))
+                File.read(File.join(EB_CONFIG_APP_SUPPORT, 'instance_id'))
+              else
+                if id = `/opt/aws/bin/ec2-metadata -i | awk '{print $2}'`.strip
+                  File.open(File.join(EB_CONFIG_APP_SUPPORT, 'instance_id'), 'w') { |f| f.write(id) }
+                  id
+                end
+              end
 availability_zone = `/opt/aws/bin/ec2-metadata -z | awk '{print $2}'`.strip
-region            =  availability_zone.slice(0..availability_zone.length-2)
+region = availability_zone.slice(0..availability_zone.length - 2)
 
-AWS.config({:credential_provider => AWS::Core::CredentialProviders::EC2Provider.new,:region => region})
+AWS.config(credential_provider: AWS::Core::CredentialProviders::EC2Provider.new, region: region)
 ec2 = AWS::EC2.new
 
-unless (`echo $PATH`).match("/usr/local/bin")
-  `export PATH=/usr/local/bin:$PATH`
-end
+`export PATH=/usr/local/bin:$PATH` unless `echo $PATH` =~ '/usr/local/bin'
 
-if ec2.instances[instance_id].tags["leader"] == "true"
-	`/usr/local/bin/bundle exec whenever --roles leader --set 'environment=#{ENVIRONMENT}&path=/var/app/current' --update-crontab`
+if ec2.instances[instance_id].tags['leader'] == 'true'
+  `/usr/local/bin/bundle exec whenever --roles leader --set 'environment=#{ENVIRONMENT}&path=/var/app/current' --update-crontab`
 else
-	`/usr/local/bin/bundle exec whenever --roles non-leader --set 'environment=#{ENVIRONMENT}&path=/var/app/current' --update-crontab`
+  `/usr/local/bin/bundle exec whenever --roles non-leader --set 'environment=#{ENVIRONMENT}&path=/var/app/current' --update-crontab`
 end

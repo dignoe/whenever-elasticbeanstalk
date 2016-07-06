@@ -1,13 +1,12 @@
 #!/usr/bin/env ruby
 
 # This file is based heavily on Whenever's 'wheneverize' command
-
 require 'optparse'
 require 'fileutils'
 require 'erb'
 
 OptionParser.new do |opts|
-  opts.banner = "Usage: #{File.basename($0)} [path]"
+  opts.banner = "Usage: #{File.basename($PROGRAM_NAME)} [path]"
 
   begin
     opts.parse!(ARGV)
@@ -19,12 +18,12 @@ OptionParser.new do |opts|
 end
 
 unless ARGV.empty?
-  if !File.exists?(ARGV.first)
+  if !File.exist?(ARGV.first)
     abort "`#{ARGV.first}' does not exist."
   elsif !File.directory?(ARGV.first)
     abort "`#{ARGV.first}' is not a directory."
   elsif ARGV.length > 1
-    abort "Too many arguments; please specify only the directory to wheneverize."
+    abort 'Too many arguments; please specify only the directory to wheneverize.'
   end
 end
 
@@ -59,17 +58,16 @@ FILE
 
 file = 'config/schedule.rb'
 file = File.join(base, file)
-if File.exists?(file)
+if File.exist?(file)
   warn "[skip] `#{file}' already exists"
-elsif File.exists?(file.downcase)
+elsif File.exist?(file.downcase)
   warn "[skip] `#{file.downcase}' exists, which could conflict with `#{file}'"
-elsif !File.exists?(File.dirname(file))
+elsif !File.exist?(File.dirname(file))
   warn "[skip] directory `#{File.dirname(file)}' does not exist"
 else
   puts "[add] writing `#{file}'"
-  File.open(file, "w") { |f| f.write(schedule_content) }
+  File.open(file, 'w') { |f| f.write(schedule_content) }
 end
-
 
 eb_config_content = <<-FILE
 files:
@@ -87,7 +85,7 @@ files:
       elif test -d /opt/elasticbeanstalk/support; then
         . /opt/elasticbeanstalk/support/envvars
       fi
-      
+
       su -l -c "cd $EB_CONFIG_APP_CURRENT && /usr/local/bin/bundle exec setup_cron" $EB_CONFIG_APP_USER
   # Add Bundle to the PATH
   "/etc/profile.d/bundle.sh":
@@ -151,17 +149,16 @@ FILE
 
 file = '.ebextensions/cron.config'
 file = File.join(base, file)
-if File.exists?(file)
+if File.exist?(file)
   warn "[skip] `#{file}' already exists"
-elsif File.exists?(file.downcase)
+elsif File.exist?(file.downcase)
   warn "[skip] `#{file.downcase}' exists, which could conflict with `#{file}'"
-elsif !File.exists?(File.dirname(file))
+elsif !File.exist?(File.dirname(file))
   warn "[skip] directory `#{File.dirname(file)}' does not exist"
 else
   puts "[add] writing `#{file}'"
-  File.open(file, "w") { |f| f.write(eb_config_content) }
+  File.open(file, 'w') { |f| f.write(eb_config_content) }
 end
-
 
 aws_credentials_content = <<-FILE
 staging:
@@ -174,15 +171,15 @@ FILE
 
 file = 'config/whenever-elasticbeanstalk.yml'
 file = File.join(base, file)
-if File.exists?(file)
+if File.exist?(file)
   warn "[skip] `#{file}' already exists"
-elsif File.exists?(file.downcase)
+elsif File.exist?(file.downcase)
   warn "[skip] `#{file.downcase}' exists, which could conflict with `#{file}'"
-elsif !File.exists?(File.dirname(file))
+elsif !File.exist?(File.dirname(file))
   warn "[skip] directory `#{File.dirname(file)}' does not exist"
 else
   puts "[add] writing `#{file}'"
-  File.open(file, "w") { |f| f.write(aws_credentials_content) }
+  File.open(file, 'w') { |f| f.write(aws_credentials_content) }
 end
 
-puts "[done] wheneverized for Elastic Beanstalk!"
+puts '[done] wheneverized for Elastic Beanstalk!'

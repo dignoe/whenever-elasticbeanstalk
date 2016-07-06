@@ -1,4 +1,4 @@
-require "whenever-elasticbeanstalk/version"
+require 'whenever-elasticbeanstalk/version'
 
 module Whenever
   module Elasticbeanstalk
