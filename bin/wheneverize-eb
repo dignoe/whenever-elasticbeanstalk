@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 
 # This file is based heavily on Whenever's 'wheneverize' command
+
 require 'optparse'
 require 'fileutils'
 require 'erb'
@@ -19,9 +20,9 @@ end
 
 unless ARGV.empty?
   if !File.exist?(ARGV.first)
-    abort "`#{ARGV.first}' does not exist."
+    abort "'#{ARGV.first}' does not exist."
   elsif !File.directory?(ARGV.first)
-    abort "`#{ARGV.first}' is not a directory."
+    abort "'#{ARGV.first}' is not a directory."
   elsif ARGV.length > 1
     abort 'Too many arguments; please specify only the directory to wheneverize.'
   end
@@ -59,13 +60,13 @@ FILE
 file = 'config/schedule.rb'
 file = File.join(base, file)
 if File.exist?(file)
-  warn "[skip] `#{file}' already exists"
+  warn "[skip] '#{file}' already exists"
 elsif File.exist?(file.downcase)
-  warn "[skip] `#{file.downcase}' exists, which could conflict with `#{file}'"
+  warn "[skip] '#{file.downcase}' exists, which could conflict with '#{file}'"
 elsif !File.exist?(File.dirname(file))
-  warn "[skip] directory `#{File.dirname(file)}' does not exist"
+  warn "[skip] directory '#{File.dirname(file)}' does not exist"
 else
-  puts "[add] writing `#{file}'"
+  puts "[add] writing '#{file}'"
   File.open(file, 'w') { |f| f.write(schedule_content) }
 end
 
@@ -150,13 +151,13 @@ FILE
 file = '.ebextensions/cron.config'
 file = File.join(base, file)
 if File.exist?(file)
-  warn "[skip] `#{file}' already exists"
+  warn "[skip] '#{file}' already exists"
 elsif File.exist?(file.downcase)
-  warn "[skip] `#{file.downcase}' exists, which could conflict with `#{file}'"
+  warn "[skip] '#{file.downcase}' exists, which could conflict with '#{file}'"
 elsif !File.exist?(File.dirname(file))
-  warn "[skip] directory `#{File.dirname(file)}' does not exist"
+  warn "[skip] directory '#{File.dirname(file)}' does not exist"
 else
-  puts "[add] writing `#{file}'"
+  puts "[add] writing '#{file}'"
   File.open(file, 'w') { |f| f.write(eb_config_content) }
 end
 
@@ -172,13 +173,13 @@ FILE
 file = 'config/whenever-elasticbeanstalk.yml'
 file = File.join(base, file)
 if File.exist?(file)
-  warn "[skip] `#{file}' already exists"
+  warn "[skip] '#{file}' already exists"
 elsif File.exist?(file.downcase)
-  warn "[skip] `#{file.downcase}' exists, which could conflict with `#{file}'"
+  warn "[skip] '#{file.downcase}' exists, which could conflict with '#{file}'"
 elsif !File.exist?(File.dirname(file))
-  warn "[skip] directory `#{File.dirname(file)}' does not exist"
+  warn "[skip] directory '#{File.dirname(file)}' does not exist"
 else
-  puts "[add] writing `#{file}'"
+  puts "[add] writing '#{file}'"
   File.open(file, 'w') { |f| f.write(aws_credentials_content) }
 end
 

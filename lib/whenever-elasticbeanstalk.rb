@@ -27,10 +27,18 @@ module Whenever
       @config_app_support = options[:eb_config_app_support]
       @instance_id = instance_id
       @availability_zone = `/opt/aws/bin/ec2-metadata -z | awk '{print $2}'`.strip
-      @region = @availability_zone.slice(0..@availability_zone.length - 2)
+      @region = region(@availability_zone)
 
       @ec2_resource = Aws::EC2::Resource.new(region: @region, credentials: @credentials)
       @environment_name = environment_name
+    end
+
+    # Returns the AWS Region based on the availability_zone
+    #
+    # @param [String] availability_zone
+    # @return [String]
+    def region(availability_zone)
+      availability_zone.match(/^(([a-z]{2}\-[a-z]+\-\d)[a-z])$/)[2]
     end
 
     # Returns the current EC2 instance's id
@@ -124,7 +132,7 @@ module Whenever
         @ec2_resource.create_tags(resources: [@instance_id], tags: tags)
       end
 
-      `/usr/local/bin/bundle exec setup_cron` unless options[:no_update]
+      setup_cron unless options[:no_update]
     end
 
     # Removes CRON leaders if more than one present
@@ -132,7 +140,7 @@ module Whenever
     # @return [void]
     def ensure_one_cron_leader
       if leader_instances.count < 1
-        `/usr/local/bin/bundle exec create_cron_leader`
+        create_cron_leader
       elsif leader_instances.count > 1 && leader_instances.include?(@instance_id)
         set_leader_tag('false')
       end
@@ -146,8 +154,26 @@ module Whenever
       if leader_instances.count > 1 && leader_instances.include?(@instance_id)
         set_leader_tag('false')
       end
+      setup_cron
+    end
 
-      `/usr/local/bin/bundle exec setup_cron`
+    # Sets up the CRON tasks
+    #
+    # @return [void]
+    def setup_cron
+      # Set the PATH
+      `export PATH=/usr/local/bin:$PATH` unless `echo $PATH` =~ '/usr/local/bin'
+
+      # Command parts
+      command_prefix = '/usr/local/bin/bundle exec whenever'
+      command_suffix = " --set 'environment=#{ENV['RACK_ENV']}&path=/var/app/current' --update-crontab"
+      command_roles = '--roles ' + (leader? ? 'leader' : 'non-leader')
+
+      # Build the command
+      command = [command_suffix, command_roles, command_prefix].join(' ')
+
+      # Run the command
+      `#{command}`
     end
 
     def set_leader_tag(value)

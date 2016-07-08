@@ -5,17 +5,4 @@ require           'aws-sdk'
 
 # Create the new Whenever::Elasticbeanstalk instance
 whenever_eb = Whenever::Elasticbeanstalk.new(Aws::InstanceProfileCredentials.new)
-
-# Set the PATH
-`export PATH=/usr/local/bin:$PATH` unless `echo $PATH` =~ '/usr/local/bin'
-
-# Command parts
-command_prefix = '/usr/local/bin/bundle exec whenever'
-command_suffix = " --set 'environment=#{ENV['RACK_ENV']}&path=/var/app/current' --update-crontab"
-command_roles = '--roles ' + (whenever_eb.leader? ? 'leader' : 'non-leader')
-
-# Build the command
-command = [command_suffix, command_roles, command_prefix].join(' ')
-
-# Run the command
-`#{command}`
+whenever_eb.setup_cron
