@@ -1,8 +1,7 @@
 #!/usr/bin/ruby
 require           'optparse'
 require           'rubygems'
-gem               'aws-sdk'
-require           'aws-sdk'
+require           'whenever-elasticbeanstalk'
 
 # Options Parsing
 options = {}

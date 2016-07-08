@@ -1,7 +1,7 @@
 #!/usr/bin/ruby
 require           'rubygems'
-gem               'aws-sdk'
 require           'aws-sdk'
+require           'whenever-elasticbeanstalk'
 
 # Create the new Whenever::Elasticbeanstalk instance
 whenever_eb = Whenever::Elasticbeanstalk.new(Aws::InstanceProfileCredentials.new)

@@ -1,5 +1,6 @@
 require 'rubygems'
 require 'aws-sdk'
+require 'whenever'
 require 'whenever-elasticbeanstalk/version'
 
 module Whenever
