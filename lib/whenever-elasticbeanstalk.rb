@@ -6,7 +6,7 @@ module Whenever
   # [Whenever::Elasticbeanstalk]
   #
   # @since 0.1.0
-  # @note Overhauled in 0.2.0 to add in functionality for
+  # @note Overhauled in 1.2.0 to add in functionality for
   class Elasticbeanstalk
 
     # Constants
