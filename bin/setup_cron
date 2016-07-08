@@ -5,4 +5,5 @@ require           'aws-sdk'
 
 # Create the new Whenever::Elasticbeanstalk instance
 whenever_eb = Whenever::Elasticbeanstalk.new(Aws::InstanceProfileCredentials.new)
+# Setup the cron job
 whenever_eb.setup_cron

@@ -20,7 +20,7 @@ module Whenever
     # @options options [String] :eb_config_app_support
     # @return [self]
     def initialize(credentials, options = {})
-      defaults = { eb_config_app_support: ENV['EB_CONFIG_APP_SUPPORT'] }
+      defaults = { eb_config_app_support: '/var/app/containerfiles' }
       options = defaults.merge(options)
 
       @credentials = credentials
