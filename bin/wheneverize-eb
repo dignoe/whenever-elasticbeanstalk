@@ -53,7 +53,7 @@ schedule_content = <<-FILE
 # Learn more: http://github.com/javan/whenever
 
 every 1.minute do
-  command "cd /var/app/current && /usr/local/bin/bundle exec ensure_one_cron_leader"
+  command "cd /var/app/current && bundle exec ensure_one_cron_leader"
 end
 FILE
 
@@ -140,7 +140,7 @@ container_commands:
     test: test ! -f /opt/elasticbeanstalk/containerfiles/.cron-setup-complete || test ! -f /opt/elasticbeanstalk/support/.cron-setup-complete
     leader_only: true
     cwd: /var/app/ondeck
-    command: su -l -s /bin/bash -c "/usr/local/bin/bundle exec create_cron_leader --no-update" $(/opt/elasticbeanstalk/bin/get-config container -k app_user)
+    command: su -l -s /bin/bash -c "bundle exec create_cron_leader --no-update" $(/opt/elasticbeanstalk/bin/get-config container -k app_user)
   cron_02_write_cron_setup_complete_file_containerfiles:
     test: test -d /opt/elasticbeanstalk/containerfiles
     command: touch /opt/elasticbeanstalk/containerfiles/.cron-setup-complete

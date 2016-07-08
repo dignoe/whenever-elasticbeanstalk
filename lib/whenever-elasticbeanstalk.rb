@@ -165,7 +165,7 @@ module Whenever
       `export PATH=/usr/local/bin:$PATH` unless `echo $PATH` =~ '/usr/local/bin'
 
       # Command parts
-      command_prefix = '/usr/local/bin/bundle exec whenever'
+      command_prefix = 'bundle exec whenever'
       command_suffix = " --set 'environment=#{ENV['RACK_ENV']}&path=/var/app/current' --update-crontab"
       command_roles = '--roles ' + (leader? ? 'leader' : 'non-leader')
 
