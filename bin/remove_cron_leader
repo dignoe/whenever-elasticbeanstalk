@@ -3,5 +3,7 @@ require           'rubygems'
 gem               'aws-sdk'
 require           'aws-sdk'
 
+# Create the new Whenever::Elasticbeanstalk instance
 whenever_eb = Whenever::Elasticbeanstalk.new(Aws::InstanceProfileCredentials.new)
+# Remove the cron leader
 whenever_eb.remove_cron_leader

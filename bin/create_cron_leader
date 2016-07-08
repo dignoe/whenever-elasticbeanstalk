@@ -4,8 +4,6 @@ require           'rubygems'
 gem               'aws-sdk'
 require           'aws-sdk'
 
-EB_CONFIG_APP_SUPPORT = ENV['EB_CONFIG_APP_SUPPORT']
-
 # Options Parsing
 options = {}
 optparse = OptionParser.new do |opts|
@@ -26,5 +24,7 @@ optparse = OptionParser.new do |opts|
 end
 optparse.parse!
 
+# Create the new Whenever::Elasticbeanstalk instance
 whenever_eb = Whenever::Elasticbeanstalk.new(Aws::InstanceProfileCredentials.new)
+# Create the cron leader
 whenever_eb.create_cron_leader(no_update: options[:no_update])

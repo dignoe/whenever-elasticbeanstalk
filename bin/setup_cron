@@ -3,18 +3,19 @@ require           'rubygems'
 gem               'aws-sdk'
 require           'aws-sdk'
 
-EB_CONFIG_APP_SUPPORT = ENV['EB_CONFIG_APP_SUPPORT']
-ENVIRONMENT = ENV['RACK_ENV']
-
+# Create the new Whenever::Elasticbeanstalk instance
 whenever_eb = Whenever::Elasticbeanstalk.new(Aws::InstanceProfileCredentials.new)
 
+# Set the PATH
 `export PATH=/usr/local/bin:$PATH` unless `echo $PATH` =~ '/usr/local/bin'
 
+# Command parts
 command_prefix = '/usr/local/bin/bundle exec whenever'
-command_suffix = " --set 'environment=#{ENVIRONMENT}&path=/var/app/current' --update-crontab"
+command_suffix = " --set 'environment=#{ENV['RACK_ENV']}&path=/var/app/current' --update-crontab"
+command_roles = '--roles ' + (whenever_eb.leader? ? 'leader' : 'non-leader')
 
-if whenever_eb.leader?
-  `#{[command_suffix, '--roles leader', command_prefix].join(' ')}`
-else
-  `#{[command_suffix, '--roles non-leader', command_prefix].join(' ')}`
-end
+# Build the command
+command = [command_suffix, command_roles, command_prefix].join(' ')
+
+# Run the command
+`#{command}`
