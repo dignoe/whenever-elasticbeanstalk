@@ -77,7 +77,7 @@ module Whenever
         }
       ]
 
-      ec2_resource.instances(filters: filters).each_with_object([]) do |i, m|
+      @ec2_resource.instances(filters: filters).each_with_object([]) do |i, m|
         m << i.id
       end
     end
@@ -101,7 +101,7 @@ module Whenever
         }
       ]
 
-      ec2_resource.instances(filters: filters).each_with_object([]) do |i, m|
+      @ec2_resource.instances(filters: filters).each_with_object([]) do |i, m|
         m << i.id
       end
     end
