@@ -165,10 +165,12 @@ module Whenever
       # Set the PATH
       `export PATH=/usr/local/bin:$PATH` unless (`echo $PATH`).strip.split(':').include?('/usr/local/bin')
 
+      roles = [ENV['RACK_ENV'], (leader? ? 'leader' : 'non-leader')]
+
       # Command parts
       command_prefix = 'bundle exec whenever'
-      command_suffix = " --set 'environment=#{ENV['RACK_ENV']}&path=/var/app/current' --update-crontab"
-      command_roles = '--roles ' + (leader? ? 'leader' : 'non-leader')
+      command_suffix = "--set 'environment=#{ENV['RACK_ENV']}&path=/var/app/current' --update-crontab"
+      command_roles = "--roles #{roles.compact.join(',')}"
 
       # Build the command
       command = [command_prefix, command_roles, command_suffix].join(' ')

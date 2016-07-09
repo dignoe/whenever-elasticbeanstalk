@@ -79,7 +79,7 @@ For `config/schedule.rb` usage, please see the documentation for the [Whenever g
 
 To run a task only on one instance, assign the task to the `leader` role.
 ```ruby
-every :day, :at => "12:30am", :roles => [:leader] do
+every :day, at: "12:30am", roles: [:leader] do
 	runner "MyModel.task_to_run_nightly_only_on_one_instance"
 end
 ```
