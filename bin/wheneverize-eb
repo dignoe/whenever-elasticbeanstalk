@@ -63,10 +63,9 @@ if File.exist?(file)
   warn "[skip] '#{file}' already exists"
 elsif File.exist?(file.downcase)
   warn "[skip] '#{file.downcase}' exists, which could conflict with '#{file}'"
-elsif !File.exist?(File.dirname(file))
-  warn "[skip] directory '#{File.dirname(file)}' does not exist"
 else
   puts "[add] writing '#{file}'"
+  FileUtils.mkdir_p(File.dirname(file))
   File.open(file, 'w') { |f| f.write(schedule_content) }
 end
 
@@ -157,10 +156,9 @@ if File.exist?(file)
   warn "[skip] '#{file}' already exists"
 elsif File.exist?(file.downcase)
   warn "[skip] '#{file.downcase}' exists, which could conflict with '#{file}'"
-elsif !File.exist?(File.dirname(file))
-  warn "[skip] directory '#{File.dirname(file)}' does not exist"
 else
   puts "[add] writing '#{file}'"
+  FileUtils.mkdir_p(File.dirname(file))
   File.open(file, 'w') { |f| f.write(eb_config_content) }
 end
 
@@ -179,10 +177,9 @@ if File.exist?(file)
   warn "[skip] '#{file}' already exists"
 elsif File.exist?(file.downcase)
   warn "[skip] '#{file.downcase}' exists, which could conflict with '#{file}'"
-elsif !File.exist?(File.dirname(file))
-  warn "[skip] directory '#{File.dirname(file)}' does not exist"
 else
   puts "[add] writing '#{file}'"
+  FileUtils.mkdir_p(File.dirname(file))
   File.open(file, 'w') { |f| f.write(aws_credentials_content) }
 end
 
