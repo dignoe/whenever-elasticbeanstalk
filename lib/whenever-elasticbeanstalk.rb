@@ -163,7 +163,7 @@ module Whenever
     # @return [void]
     def setup_cron
       # Set the PATH
-      `export PATH=/usr/local/bin:$PATH` unless `echo $PATH` =~ '/usr/local/bin'
+      `export PATH=/usr/local/bin:$PATH` unless (`echo $PATH`).strip.split(':').include?('/usr/local/bin')
 
       # Command parts
       command_prefix = 'bundle exec whenever'
