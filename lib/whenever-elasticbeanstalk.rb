@@ -69,7 +69,7 @@ module Whenever
       filters = [
         {
           key: "tag:#{ENVIRONMENT_NAME_TAG}",
-          value: @environment_name
+          values: [@environment_name]
         },
         {
           name: 'instance-state-name',
@@ -89,7 +89,7 @@ module Whenever
       filters = [
         {
           key: "tag:#{ENVIRONMENT_NAME_TAG}",
-          value: @environment_name
+          values: [@environment_name]
         },
         {
           name: 'tag:leader',
