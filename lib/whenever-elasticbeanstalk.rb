@@ -68,7 +68,7 @@ module Whenever
     def instances
       filters = [
         {
-          key: "tag:#{ENVIRONMENT_NAME_TAG}",
+          name: "tag:#{ENVIRONMENT_NAME_TAG}",
           values: [@environment_name]
         },
         {
@@ -88,7 +88,7 @@ module Whenever
     def leader_instances
       filters = [
         {
-          key: "tag:#{ENVIRONMENT_NAME_TAG}",
+          name: "tag:#{ENVIRONMENT_NAME_TAG}",
           values: [@environment_name]
         },
         {
@@ -100,7 +100,7 @@ module Whenever
           values: ['running']
         }
       ]
-
+      puts "filters: #{filters.inspect}"
       @ec2_resource.instances(filters: filters).each_with_object([]) do |i, m|
         m << i.id
       end
@@ -129,7 +129,7 @@ module Whenever
     # @return [void]
     def create_cron_leader(options = {})
       if leader_instances.count < 1
-        tags = [{ key: 'leader', value: 'true' }]
+        tags = [{ name: 'leader', value: 'true' }]
         @ec2_resource.create_tags(resources: [@instance_id], tags: tags)
       end
 
@@ -178,7 +178,7 @@ module Whenever
     end
 
     def set_leader_tag(value)
-      tags = [{ key: 'leader', value: 'false' }]
+      tags = [{ name: 'leader', value: 'false' }]
       @ec2_resource.create_tags(resources: [@instance_id], tags: tags)
     end
 
