@@ -186,7 +186,7 @@ module Whenever
     #
     # @return [Boolean]
     def leader?
-      leader_tag = @instance.tags.find { |t| t.name == 'leader' }
+      leader_tag = instance.tags.find { |t| t.name == 'leader' }
       !leader.nil? && (leader_tag.value.downcase == 'true')
     end
   end
