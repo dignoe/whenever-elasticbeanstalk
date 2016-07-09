@@ -171,7 +171,7 @@ module Whenever
       command_roles = '--roles ' + (leader? ? 'leader' : 'non-leader')
 
       # Build the command
-      command = [command_suffix, command_roles, command_prefix].join(' ')
+      command = [command_prefix, command_roles, command_suffix].join(' ')
 
       # Run the command
       `#{command}`
