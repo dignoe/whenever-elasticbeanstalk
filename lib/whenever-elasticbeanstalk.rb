@@ -100,7 +100,7 @@ module Whenever
           values: ['running']
         }
       ]
-      puts "filters: #{filters.inspect}"
+
       @ec2_resource.instances(filters: filters).each_with_object([]) do |i, m|
         m << i.id
       end
