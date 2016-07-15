@@ -22,6 +22,14 @@ Or install it yourself as:
 $ gem install whenever-elasticbeanstalk
 ```
 
+### Working with GIT Referenced Gems
+
+In order to work with GIT referenced gems in ElasticBeanstalk please visit ensure you read the following GIST:
+
+https://gist.github.com/jufemaiz/eba1ee62c3709d2db90cc16eb2c5c10b
+
+<script src="https://gist.github.com/jufemaiz/eba1ee62c3709d2db90cc16eb2c5c10b.js"></script>
+
 ## Getting started
 ```bash
 $ cd /apps/my-great-project
