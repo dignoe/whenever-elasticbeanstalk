@@ -116,7 +116,7 @@ module Whenever
         File.read(filename)
       else
         ec2_instance = @ec2_resource.instance(@instance_id)
-        env_name_tag = @ec2_instance.tags.find { |t| t.key == ENVIRONMENT_NAME_TAG }
+        env_name_tag = ec2_instance.tags.find { |t| t.key == ENVIRONMENT_NAME_TAG }
         File.open(filename, 'w') { |f| f.write(env_name_tag.value) }
         env_name
       end
