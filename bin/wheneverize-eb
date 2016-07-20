@@ -89,7 +89,7 @@ files:
       . $EB_SUPPORT_DIR/envvars
       . $EB_SCRIPT_DIR/use-app-ruby.sh
 
-      su -s /bin/bash -c "cd $EB_APP_CURRENT_DIR && /usr/local/bin/bundle exec setup_cron" $EB_CONFIG_APP_USER
+      su -s /bin/bash -c "cd $EB_APP_CURRENT_DIR && bundle exec setup_cron" $EB_CONFIG_APP_USER
   # Add Bundle to the PATH
   "/etc/profile.d/bundle.sh":
     mode: "000755"
