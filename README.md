@@ -30,6 +30,19 @@ https://gist.github.com/jufemaiz/eba1ee62c3709d2db90cc16eb2c5c10b
 
 <script src="https://gist.github.com/jufemaiz/eba1ee62c3709d2db90cc16eb2c5c10b.js"></script>
 
+### AWS EB Versions Tested
+
+We have tested this with the following:
+
+* 64bit Amazon Linux 2016.03 v2.1.3 running Ruby 2.3 (Puma)
+* 64bit Amazon Linux 2016.03 v2.1.3 running Ruby 2.2 (Puma)
+<!-- * 64bit Amazon Linux 2016.03 v2.1.3 running Ruby 2.1 (Puma)
+* 64bit Amazon Linux 2016.03 v2.1.3 running Ruby 2.0 (Puma) -->
+
+The test Rails Application is available at:
+
+https://github.com/jufemaiz/whenever-elasticbeanstalk-test/
+
 ## Getting started
 ```bash
 $ cd /apps/my-great-project
