@@ -114,7 +114,7 @@ module Whenever
     # @option options [Boolean] :no_update
     # @return [void]
     def create_cron_leader(options = {})
-      self.leader_tag = 'true' if leader_instances.count < 1
+      self.leader_tag = 'true' if leader_instances.empty?
 
       setup_cron unless options[:no_update]
     end
@@ -123,7 +123,7 @@ module Whenever
     #
     # @return [void]
     def ensure_one_cron_leader
-      if leader_instances.count < 1
+      if leader_instances.empty?
         create_cron_leader
       elsif leader_instances.count > 1 && leader_instances.include?(@instance_id)
         self.leader_tag = 'false'
@@ -171,7 +171,7 @@ module Whenever
     # @param [String, Boolean] value
     # @return [void]
     def leader_tag=(value)
-      tags = [{ name: 'leader', value: value }]
+      tags = [{ key: 'leader', value: value.to_s }]
       @ec2_resource.create_tags(resources: [@instance_id], tags: tags)
     end
 
