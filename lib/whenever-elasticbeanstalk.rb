@@ -9,11 +9,12 @@ module Whenever
   # @since 0.1.0
   # @note Overhauled in 1.2.0 to add in functionality for
   class Elasticbeanstalk
-
-    # Constants
+    # @!group Class Constants
     ENVIRONMENT = ENV['RACK_ENV'].freeze
     ENVIRONMENT_NAME_TAG = 'elasticbeanstalk:environment-name'.freeze
+    # @!endgroup
 
+    # @!group Instance Methods
     # Initializes a new Whenever::Elasticbeanstalk
     #
     # @param [Aws::CredentialProvider] credentials
@@ -67,14 +68,8 @@ module Whenever
     # @return [Array<Aws::EC2::Instance>]
     def instances
       filters = [
-        {
-          name: "tag:#{ENVIRONMENT_NAME_TAG}",
-          values: [@environment_name]
-        },
-        {
-          name: 'instance-state-name',
-          values: ['running']
-        }
+        { name: "tag:#{ENVIRONMENT_NAME_TAG}", values: [@environment_name] },
+        { name: 'instance-state-name', values: ['running'] }
       ]
 
       @ec2_resource.instances(filters: filters).each_with_object([]) do |i, m|
@@ -87,18 +82,9 @@ module Whenever
     # @return [Array<Aws::EC2::Instance>]
     def leader_instances
       filters = [
-        {
-          name: "tag:#{ENVIRONMENT_NAME_TAG}",
-          values: [@environment_name]
-        },
-        {
-          name: 'tag:leader',
-          values: ['true']
-        },
-        {
-          name: 'instance-state-name',
-          values: ['running']
-        }
+        { name: "tag:#{ENVIRONMENT_NAME_TAG}", values: [@environment_name] },
+        { name: 'tag:leader', values: ['true'] },
+        { name: 'instance-state-name', values: ['running'] }
       ]
 
       @ec2_resource.instances(filters: filters).each_with_object([]) do |i, m|
@@ -128,10 +114,7 @@ module Whenever
     # @option options [Boolean] :no_update
     # @return [void]
     def create_cron_leader(options = {})
-      if leader_instances.count < 1
-        tags = [{ name: 'leader', value: 'true' }]
-        @ec2_resource.create_tags(resources: [@instance_id], tags: tags)
-      end
+      self.leader_tag = 'true' if leader_instances.count < 1
 
       setup_cron unless options[:no_update]
     end
@@ -143,7 +126,8 @@ module Whenever
       if leader_instances.count < 1
         create_cron_leader
       elsif leader_instances.count > 1 && leader_instances.include?(@instance_id)
-        set_leader_tag('false')
+        self.leader_tag = 'false'
+        setup_cron
       end
     end
 
@@ -153,7 +137,7 @@ module Whenever
     # @return [void]
     def remove_cron_leader
       if leader_instances.count > 1 && leader_instances.include?(@instance_id)
-        set_leader_tag('false')
+        self.leader_tag = 'false'
       end
       setup_cron
     end
@@ -163,13 +147,16 @@ module Whenever
     # @return [void]
     def setup_cron
       # Set the PATH
-      `export PATH=/usr/local/bin:$PATH` unless (`echo $PATH`).strip.split(':').include?('/usr/local/bin')
+      unless `echo $PATH`.strip.split(':').include?('/usr/local/bin')
+        `export PATH=/usr/local/bin:$PATH`
+      end
 
       roles = [ENV['RACK_ENV'], (leader? ? 'leader' : 'non-leader')]
 
       # Command parts
       command_prefix = 'bundle exec whenever'
-      command_suffix = "--set 'environment=#{ENV['RACK_ENV']}&path=/var/app/current' --update-crontab"
+      command_suffix = "--set 'environment=#{ENV['RACK_ENV']}&path=/var/app/current' " \
+                       '--update-crontab'
       command_roles = "--roles #{roles.compact.join(',')}"
 
       # Build the command
@@ -179,8 +166,12 @@ module Whenever
       `#{command}`
     end
 
-    def set_leader_tag(value)
-      tags = [{ name: 'leader', value: 'false' }]
+    # Set the leader tag to something
+    #
+    # @param [String, Boolean] value
+    # @return [void]
+    def leader_tag=(value)
+      tags = [{ name: 'leader', value: value }]
       @ec2_resource.create_tags(resources: [@instance_id], tags: tags)
     end
 
@@ -189,7 +180,8 @@ module Whenever
     # @return [Boolean]
     def leader?
       leader_tag = instance.tags.find { |t| t.key == 'leader' }
-      !leader_tag.nil? && (leader_tag.value.downcase == 'true')
+      !leader_tag.nil? && (leader_tag.value.casecmp('true') == 0)
     end
+    # @!endgroup
   end
 end
