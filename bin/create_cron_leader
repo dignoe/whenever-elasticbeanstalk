@@ -4,6 +4,7 @@ require 'optparse'
 require 'rubygems'
 gem 'aws-sdk'
 require 'aws-sdk'
+require 'yaml'
 
 options = {}
 

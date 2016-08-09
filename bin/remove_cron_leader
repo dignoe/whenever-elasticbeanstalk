@@ -3,6 +3,7 @@ require 'rubygems'
 gem 'aws-sdk'
 
 require 'aws-sdk'
+require 'yaml'
 
 ENVIRONMENT_NAME_FILE = "/var/app/support/env_name"
 AWS_CREDENTIALS = YAML.load_file("config/whenever-elasticbeanstalk.yml")[ENV["RAILS_ENV"]]
