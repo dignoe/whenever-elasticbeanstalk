@@ -47,10 +47,13 @@ module Whenever
     #
     # @return [String]
     def application_support_directory
-      dir = `/opt/elasticbeanstalk/bin/get-config container -k app_log_dir`
-      dir = dir.gsub(/\/log$/,'')
-
-      dir || '/var/app/support'
+      if Dir.exist?('/var/app/support')
+        '/var/app/support'
+      elsif Dir.exist?('/var/app/containerfiles')
+        '/var/app/containerfiles'
+      else
+        nil
+      end
     end
 
     # Returns the current EC2 instance's id
@@ -59,7 +62,7 @@ module Whenever
     def instance_id
       filename = File.join(@config_app_support, 'instance_id')
       if File.exist?(filename)
-        File.read(filename)
+        File.read(filename).strip
       elsif (id = `/opt/aws/bin/ec2-metadata -i | awk '{print $2}'`.strip)
         File.open(filename, 'w') { |f| f.write(id) }
         id
@@ -109,7 +112,7 @@ module Whenever
     def environment_name
       filename = File.join(@config_app_support, 'env_name')
       if File.exist?(filename)
-        File.read(filename)
+        File.read(filename).strip
       else
         ec2_instance = @ec2_resource.instance(@instance_id)
         env_name_tag = ec2_instance.tags.find { |t| t.key == ENVIRONMENT_NAME_TAG }
