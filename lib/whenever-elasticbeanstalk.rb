@@ -48,7 +48,9 @@ module Whenever
     # @return [String]
     def application_support_directory
       dir = `/opt/elasticbeanstalk/bin/get-config container -k app_log_dir`
-      dir.gsub(/\/log$/,'')
+      dir = dir.gsub(/\/log$/,'')
+
+      dir || '/var/app/support'
     end
 
     # Returns the current EC2 instance's id
