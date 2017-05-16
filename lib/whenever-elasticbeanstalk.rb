@@ -22,7 +22,7 @@ module Whenever
     # @options options [String] :eb_config_app_support
     # @return [self]
     def initialize(credentials, options = {})
-      defaults = { eb_config_app_support: '/var/app/containerfiles' }
+      defaults = { eb_config_app_support: application_support_directory }
       options = defaults.merge(options)
 
       @credentials = credentials
@@ -41,6 +41,14 @@ module Whenever
     # @return [String]
     def region(availability_zone)
       availability_zone.match(/^(([a-z]{2}\-[a-z]+\-\d)[a-z])$/)[2]
+    end
+
+    # Returns the default path for application support
+    #
+    # @return [String]
+    def application_support_directory
+      dir = `/opt/elasticbeanstalk/bin/get-config container -k app_log_dir`
+      dir.gsub(/\/log$/,'')
     end
 
     # Returns the current EC2 instance's id
